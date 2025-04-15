@@ -1,0 +1,855 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/2.png">
+  <link rel="icon" href="/img/2.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="淡黄的cherry">
+  <meta name="keywords" content="">
+  <meta name="referrer" content="no-referrer">
+  
+    <meta name="description" content="之前我们已经把相关环境，持续集成这一块都实现了。详细内容可查看我cicd专栏前三篇的内容。 kubeadm 部署k8s-CSDN博客  harbor部署-CSDN博客 Jenkins+gitlab持续集成_gitlab jenkins 集成-CSDN博客 本篇内容主要是讲解持续集成和持续交付是如何实现和部署的。 概念 持续交付建立在持续集成的基础上，通过自动化的流程确保软件可以随时随地进行部署。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="jenkins+gitlab+docker+harbor+k8s终结篇">
+<meta property="og:url" content="http://example.com/2025/04/15/jenkins-gitlab-docker-harbor-k8s%E7%BB%88%E7%BB%93%E7%AF%87/index.html">
+<meta property="og:site_name" content="cherry">
+<meta property="og:description" content="之前我们已经把相关环境，持续集成这一块都实现了。详细内容可查看我cicd专栏前三篇的内容。 kubeadm 部署k8s-CSDN博客  harbor部署-CSDN博客 Jenkins+gitlab持续集成_gitlab jenkins 集成-CSDN博客 本篇内容主要是讲解持续集成和持续交付是如何实现和部署的。 概念 持续交付建立在持续集成的基础上，通过自动化的流程确保软件可以随时随地进行部署。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/33e75aa499d6441e9e997bd210cff040.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/55dcdcf431a14bbd9bd889ff73a342ff.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/675b129dd52e4148a2b55c4137344aee.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/551110df74e84b5396f6dbe650f56e0c.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/6a30c2a630dd403fb81d770862faf5fa.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/553aa352eb7549d5bcb57541d7ef717f.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/f796bdb8b1474bdd97dc40f3b178bc60.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/68d16e255d0c43fea5ef537a6c352659.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/4fcf891879064c54b24f90c429963041.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/b853e828b3de476ebaa60355be6fbbbc.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/7fbd2f4bfc4e4fafb2ce1730ba04eac2.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/035923010dab43f89a143957b3f4ade4.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/24c425ebcfe0448da204dd89c10d5d52.png">
+<meta property="article:published_time" content="2025-04-15T09:34:20.000Z">
+<meta property="article:modified_time" content="2025-04-15T09:34:55.727Z">
+<meta property="article:author" content="淡黄的cherry">
+<meta property="article:tag" content="cicd">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/33e75aa499d6441e9e997bd210cff040.png">
+  
+  
+  
+  <title>jenkins+gitlab+docker+harbor+k8s终结篇 - cherry</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/macpanel.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong class="navbar-title">cherryの技术文档</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="jenkins+gitlab+docker+harbor+k8s终结篇"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-15 17:34" pubdate>
+          2025年4月15日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">jenkins+gitlab+docker+harbor+k8s终结篇</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p> 之前我们已经把相关环境，持续集成这一块都实现了。详细内容可查看我cicd专栏前三篇的内容。</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_69326428/article/details/144375315">kubeadm 部署k8s-CSDN博客</a></p>
+<p> <a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_69326428/article/details/144376600">harbor部署-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_69326428/article/details/144470530">Jenkins+gitlab持续集成_gitlab jenkins 集成-CSDN博客</a></p>
+<p>本篇内容主要是讲解持续集成和持续交付是如何实现和部署的。</p>
+<p><strong>概念</strong></p>
+<p>持续交付建立在持续集成的基础上，通过自动化的流程确保软件可以随时随地进行部署。</p>
+<p><strong>流程</strong><br> 这时，持续交付后的代码已经在主分支上了，这处于某个版本的待发布的状态，随时可以将开发环境的功能部署到生产环境中（部署到生成环境前还需要在测试环境性能测试、回归测试、自动化测试、人工测试等），运行脚本构建打包应用，通过自动化部署工具部署到生产环境运行应用，监控生产环境指标，如出现问题和错误，可以触发手动或自动回滚，如系统正常，则定期回顾，收集反馈，优化，并持续改进</p>
+<p><strong>流程图</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/33e75aa499d6441e9e997bd210cff040.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p><strong>机器规划如下</strong></p>
+<table>
+<thead>
+<tr>
+<th>设备名称</th>
+<th>ip地址</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>master231</td>
+<td>10.0.0.231</td>
+<td>2核，4GiB，系统盘 20GiB</td>
+</tr>
+<tr>
+<td>worken232</td>
+<td>10.0.0.232</td>
+<td>2核，4GiB，系统盘 20GiB</td>
+</tr>
+<tr>
+<td>worken233</td>
+<td>10.0.0.233</td>
+<td>2核，4GiB，系统盘 20GiB</td>
+</tr>
+<tr>
+<td>jenkins211</td>
+<td>10.0.0.211</td>
+<td>2核，4GiB，系统盘 20GiB</td>
+</tr>
+<tr>
+<td>gitlab212</td>
+<td>10.0.0.212</td>
+<td>4核，4GiB，系统盘 20GiB</td>
+</tr>
+<tr>
+<td>harbor</td>
+<td>10.0.0.250</td>
+<td>2核，4GiB，系统盘 20GiB</td>
+</tr>
+</tbody></table>
+<h2 id="一、编写dockerfile"><a href="#一、编写dockerfile" class="headerlink" title="一、编写dockerfile"></a>一、编写dockerfile</h2><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs gradle">[root@gitlab212 <span class="hljs-keyword">project</span>]# pwd<br><span class="hljs-regexp">/root/</span><span class="hljs-keyword">project</span><br><br>[root@gitlab212 <span class="hljs-keyword">project</span>]# vim Dockerfile <br><span class="hljs-keyword">FROM</span> registry.cn-hangzhou.aliyuncs.com<span class="hljs-regexp">/yinzhengjie-k8s/</span>apps:v1<br><br>EXPOSE <span class="hljs-number">80</span><br><br>WORKDIR <span class="hljs-regexp">/usr/</span>share<span class="hljs-regexp">/nginx/</span>html/<br><br>ADD . <span class="hljs-regexp">/usr/</span>share<span class="hljs-regexp">/nginx/</span>html/<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>本地打镜像测试</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cmake">[root@gitlab212 <span class="hljs-keyword">project</span>]<span class="hljs-comment"># docker image build -t yiliao:v1 .</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>运行镜像</p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs autoit">[root<span class="hljs-symbol">@gitlab212</span> project]<span class="hljs-meta"># docker run -d -p 88:80  yiliao:v1</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>访问</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://10.0.0.212:88/">http://10.0.0.212:88/</a></p>
+</blockquote>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/55dcdcf431a14bbd9bd889ff73a342ff.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<h2 id="二、集成harbor"><a href="#二、集成harbor" class="headerlink" title="二、集成harbor"></a>二、集成harbor</h2><p>1.启动harbor仓库</p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs autoit">[root<span class="hljs-symbol">@harbor</span>.oldboyedu.com harbor]<span class="hljs-meta"># docker-compose down -t 0</span><br>[root<span class="hljs-symbol">@harbor</span>.oldboyedu.com harbor]<span class="hljs-meta"># docker-compose up -d</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>2.harbor新建仓库</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/675b129dd52e4148a2b55c4137344aee.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p> 3.jenkins编写shell</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs stylus">docker login -u admin -<span class="hljs-selector-tag">p</span> <span class="hljs-number">1</span> harbor<span class="hljs-selector-class">.cherry</span><span class="hljs-selector-class">.com</span><br>docker <span class="hljs-selector-tag">image</span> build -t harbor<span class="hljs-selector-class">.cherry</span>.com/yiliao/yiliao:v1 .<br>docker push harbor<span class="hljs-selector-class">.cherry</span>.com/yiliao/yiliao:v1<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/551110df74e84b5396f6dbe650f56e0c.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p> 4.推送故障排查</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/6a30c2a630dd403fb81d770862faf5fa.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>没有docker命令，只需要在jenkins上安装docker </p>
+<p>jenkins上做harbor的hosts解析</p>
+<blockquote>
+<p>[root@jenkins211 ~]# echo 10.0.0.250 harbor.cherry.com &gt;&gt;&#x2F;etc&#x2F;hosts</p>
+</blockquote>
+<p> x509证书问题</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/553aa352eb7549d5bcb57541d7ef717f.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<figure class="highlight tap"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs tap">创建harbor客户端证书存放目录<br>[root@jenkins211 ~]<span class="hljs-comment"># mkdir -pv /etc/docker/certs.d/harbor.cherry.com</span><br><br>harbor上需要准备客户端证书<br>[root@harbor certs]<span class="hljs-comment"># ll</span><br>total 20<br>drwxr-xr-x<span class="hljs-number"> 5 </span>root root<span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 10 </span>08:26 ./<br>drwxr-xr-x<span class="hljs-number"> 4 </span>root root<span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 10 </span>08:45 ../<br>drwxr-xr-x<span class="hljs-number"> 2 </span>root root<span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 10 </span>08:31 ca/<br>drwxr-xr-x<span class="hljs-number"> 2 </span>root root<span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 18 </span>05:55 docker-client/<br>drwxr-xr-x<span class="hljs-number"> 2 </span>root root<span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 10 </span>08:32 harbor-server/<br><br>[root@harbor.oldboyedu.com certs]<span class="hljs-comment"># openssl x509 -inform PEM -in harbor-server/harbor.cherry.com.crt -out docker-client/harbor.cherry.com.cert</span><br><span class="hljs-comment">#查看证书一致性</span><br>[root@harbor.oldboyedu.com certs]<span class="hljs-comment"># md5sum docker-client/harbor.cherry.com.cert harbor-server/harbor.cherry.com.crt</span><br>cp harbor-server/harbor.cherry.key /docker-client/<br>cp ca/ca.crt docker-client/<br><br>[root@harbor certs]<span class="hljs-comment"># cd docker-client/</span><br>[root@harbor docker-client]<span class="hljs-comment"># ll</span><br>total 20<br>drwxr-xr-x<span class="hljs-number"> 2 </span>root root<span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 18 </span>05:55 ./<br>drwxr-xr-x<span class="hljs-number"> 5 </span>root root<span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 10 </span>08:26 ../<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 2041 </span>Dec<span class="hljs-number"> 18 </span>05:55 ca.crt<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 2134 </span>Dec<span class="hljs-number"> 18 </span>05:38 harbor.cherry.com.cert<br>-rw-------<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 3272 </span>Dec<span class="hljs-number"> 18 </span>05:54 harbor.cherry.com.key<br><br><span class="hljs-comment">#拷贝证书到jenkins</span><br>[root@jenkins211 ~]<span class="hljs-comment"># scp harbor.cherry.com:/softwares/harbor/certs/docker-client/* /etc/docker/certs.d/harbor.cherry.com</span><br>[root@jenkins211 ~]<span class="hljs-comment"># ll /etc/docker/certs.d/harbor.cherry.com</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>登录harbor仓库</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">[root@jenkins211 harbor.cherry.com]# docker <span class="hljs-keyword">login</span> -u <span class="hljs-keyword">admin</span> -p <span class="hljs-number">1</span> harbor.cherry.com<br><span class="hljs-built_in">WARNING</span>! <span class="hljs-keyword">Using</span> <span class="hljs-comment">--password via the CLI is insecure. Use --password-stdin.</span><br><span class="hljs-built_in">WARNING</span>! Your <span class="hljs-keyword">password</span> will be stored <span class="hljs-keyword">unencrypted</span> <span class="hljs-keyword">in</span> /root/.docker/config.json.<br>Configure a credential helper <span class="hljs-keyword">to</span> remove this <span class="hljs-built_in">warning</span>. See<br>https://docs.docker.com/engine/reference/commandline/<span class="hljs-keyword">login</span>/#credentials-store<br><br><span class="hljs-keyword">Login</span> Succeeded<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p> 5.harbor仓库查看镜像</p>
+<p>这时候镜像已经推送到harbor仓库了</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/f796bdb8b1474bdd97dc40f3b178bc60.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2><h2 id="三、jenkins一键更新k8s项目"><a href="#三、jenkins一键更新k8s项目" class="headerlink" title="三、jenkins一键更新k8s项目"></a>三、jenkins一键更新k8s项目</h2><p>1.新建yiliao名称空间</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs dts">[root@master231 <span class="hljs-number">01</span>-yiliao]<span class="hljs-meta"># cat 01-ns-yiliao.yaml </span><br><span class="hljs-symbol">apiVersion:</span> v1<br><span class="hljs-symbol">kind:</span> Namespace<br><span class="hljs-symbol">metadata:</span><br><span class="hljs-symbol">  labels:</span><br><span class="hljs-symbol">    school:</span> cherry<br><span class="hljs-symbol">    class:</span> cherry<br><span class="hljs-symbol">  name:</span> yiliao<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>2.使用deploy控制器编写资源清单</p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs nix">[root@master231 <span class="hljs-number">0</span>1-yiliao]<span class="hljs-comment"># cat 02-deploy-yiliao.yaml </span><br><span class="hljs-params">apiVersion:</span> apps<span class="hljs-symbol">/v1</span><br><span class="hljs-params">kind:</span> Deployment<br><span class="hljs-params">metadata:</span><br>  <span class="hljs-params">name:</span> deploy-yiliao<br>  <span class="hljs-params">namespace:</span> yiliao<br><span class="hljs-params">spec:</span><br>  <span class="hljs-params">replicas:</span> <span class="hljs-number">3</span><br>  <span class="hljs-params">selector:</span><br>    <span class="hljs-params">matchLabels:</span><br>      <span class="hljs-params">apps:</span> yiliao<br>  <span class="hljs-params">template:</span><br>    <span class="hljs-params">metadata:</span><br>      <span class="hljs-params">labels:</span><br>        <span class="hljs-params">apps:</span> yiliao<br>    <span class="hljs-params">spec:</span><br>       <span class="hljs-params">containers:</span><br>       <span class="hljs-operator">-</span> <span class="hljs-params">name:</span> yiliao<br>         <span class="hljs-params">image:</span> harbor.cherry.com<span class="hljs-operator">/</span>yiliao<span class="hljs-operator">/</span>yiliao:v1<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>3.编写svc</p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs nix">[root@master231 <span class="hljs-number">0</span>1-yiliao]<span class="hljs-comment"># cat 03-svc-yiliao.yaml </span><br><span class="hljs-params">apiVersion:</span> v1<br><span class="hljs-params">kind:</span> Service<br><span class="hljs-params">metadata:</span><br>  <span class="hljs-params">name:</span> yiliao-svc<br>  <span class="hljs-params">namespace:</span> yiliao<br><span class="hljs-params">spec:</span><br>  <span class="hljs-params">type:</span> NodePort<br>  <span class="hljs-params">selector:</span><br>    <span class="hljs-params">apps:</span> yiliao<br>  <span class="hljs-params">ports:</span><br>  <span class="hljs-operator">-</span> <span class="hljs-params">port:</span> <span class="hljs-number">80</span><br>    <span class="hljs-params">targetPort:</span> <span class="hljs-number">80</span><br>    <span class="hljs-params">nodePort:</span> <span class="hljs-number">30080</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>4.部署</p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs autoit"><span class="hljs-meta">#创建资源</span><br>[root<span class="hljs-symbol">@master231</span> <span class="hljs-number">01</span>-yiliao]<span class="hljs-meta"># kubectl apply -f .</span><br><br><span class="hljs-meta">#指定名称空间查看</span><br>[root<span class="hljs-symbol">@master231</span> <span class="hljs-number">01</span>-yiliao]<span class="hljs-meta"># kubectl get svc,po -n yiliao </span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>5.创建secret</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs routeros">kubectl create<span class="hljs-built_in"> secret </span>docker-registry harbor-secret \<br>  <span class="hljs-attribute">--docker-server</span>=harbor.cherry.com \<br>  <span class="hljs-attribute">--docker-username</span>=admin \<br>  <span class="hljs-attribute">--docker-password</span>=1 \<br>  <span class="hljs-attribute">--namespace</span>=yiliao<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>创建工作负载</p>
+<figure class="highlight tap"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs tap">[root@master231 yiliao]<span class="hljs-comment"># ll</span><br>total 20<br>drwxr-xr-x <span class="hljs-number"> 2 </span>root root<span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 18 </span>15:30 ./<br>drwx------<span class="hljs-number"> 10 </span>root root<span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 18 </span>15:30 ../<br>-rw-r--r-- <span class="hljs-number"> 1 </span>root root <span class="hljs-number"> 103 </span>Dec<span class="hljs-number"> 18 </span>14:44 01-ns-yiliao.yaml<br>-rw-r--r-- <span class="hljs-number"> 1 </span>root root <span class="hljs-number"> 378 </span>Dec<span class="hljs-number"> 18 </span>15:20 02-deploy-yiliao.yaml<br>-rw-r--r-- <span class="hljs-number"> 1 </span>root root <span class="hljs-number"> 191 </span>Dec<span class="hljs-number"> 18 </span>15:30 03-svc-yiliao.yaml<br><br><br>[root@master231 yiliao]<span class="hljs-comment"># kubectl apply -f .</span><br>namespace/yiliao created<br>deployment.apps/deploy-yiliao created<br>service/yiliao-svc created<br><br><br>//所有节点都需要harbor客户端证书，不然镜像拉取会失败<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>5.访问</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://10.0.0.232:30080/">http://10.0.0.232:30080/</a></p>
+</blockquote>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/68d16e255d0c43fea5ef537a6c352659.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<h2 id="四、更新项目"><a href="#四、更新项目" class="headerlink" title="四、更新项目"></a>四、更新项目</h2><p>1.jenkins安装kubectl工具</p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">我本地已经下载了，这里就直接上传到<span class="hljs-keyword">jenkins中</span><br><span class="hljs-keyword"></span><br><span class="hljs-comment">#将kubectl放到PATH环境变量</span><br>[root@<span class="hljs-keyword">jenkins211 </span>~]<span class="hljs-comment"># mv kubectl-1.23.17 /usr/local/sbin/kubectl</span><br>[root@<span class="hljs-keyword">jenkins211 </span>~]<span class="hljs-comment"># chmod +x /usr/local/sbin/kubectl</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>2.pod创建的时候会携带https证书，所以我们需要拷贝231节点证书到jenkins</p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs autoit">[root<span class="hljs-symbol">@jenkins211</span> ~]<span class="hljs-meta"># mkdir -pv ~/.kube/</span><br>[root<span class="hljs-symbol">@jenkins211</span> ~]<span class="hljs-meta"># scp 10.0.0.231:/root/.kube/config ~/.kube/</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>3.gitlab修改项目</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/4fcf891879064c54b24f90c429963041.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>4.jenkins构建项目，测试</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs stylus">docker login -u admin -<span class="hljs-selector-tag">p</span> <span class="hljs-number">1</span> harbor<span class="hljs-selector-class">.cherry</span><span class="hljs-selector-class">.com</span><br>docker <span class="hljs-selector-tag">image</span> build -t harbor<span class="hljs-selector-class">.cherry</span>.com/yiliao/yiliao:v3 .<br>docker push harbor<span class="hljs-selector-class">.cherry</span>.com/yiliao/yiliao:v3<br>kubectl -n yiliao set <span class="hljs-selector-tag">image</span> deploy deploy-yiliao yiliao=harbor<span class="hljs-selector-class">.cherry</span>.com/yiliao/yiliao:v3<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/b853e828b3de476ebaa60355be6fbbbc.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p> 查看harbor仓库，我们打的镜像都成功推上来了</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/7fbd2f4bfc4e4fafb2ce1730ba04eac2.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p> 访问</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/035923010dab43f89a143957b3f4ade4.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<h2 id="五、自动构建"><a href="#五、自动构建" class="headerlink" title="五、自动构建"></a>五、自动构建</h2><p>我们每次都需要手动更改jenkins版本号，这是件麻烦的事，我们可以选择git参数构建的方式，这样就不需要手动更改版本号</p>
+<p>1.git参数填写</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/24c425ebcfe0448da204dd89c10d5d52.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p> 2.修改jenkins中shell脚本</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs stylus">docker login -u admin -<span class="hljs-selector-tag">p</span> <span class="hljs-number">1</span> harbor<span class="hljs-selector-class">.cherry</span><span class="hljs-selector-class">.com</span><br>docker <span class="hljs-selector-tag">image</span> build -t harbor<span class="hljs-selector-class">.cherry</span>.com/yiliao/yiliao:<span class="hljs-variable">$release</span> .<br>docker push harbor<span class="hljs-selector-class">.cherry</span>.com/yiliao/yiliao:<span class="hljs-variable">$release</span><br>kubectl -n yiliao set <span class="hljs-selector-tag">image</span> deploy deploy-yiliao yiliao=harbor<span class="hljs-selector-class">.cherry</span>.com/yiliao/yiliao:<span class="hljs-variable">$release</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>4.jenkins选择版本构建</p>
+<p>5.harbor仓库查看最新镜像</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/cicd/" class="category-chain-item">cicd</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/cicd/" class="print-no-link">#cicd</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>jenkins+gitlab+docker+harbor+k8s终结篇</div>
+      <div>http://example.com/2025/04/15/jenkins-gitlab-docker-harbor-k8s终结篇/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>淡黄的cherry</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月15日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/15/Kubernetes-%E5%B8%B8%E7%94%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E6%8F%92%E4%BB%B6/" title="Kubernetes 常用的网络插件">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Kubernetes 常用的网络插件</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/15/Jenkins-gitlab%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/" title="Jenkins+gitlab持续集成">
+                        <span class="hidden-mobile">Jenkins+gitlab持续集成</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  <div>
+    <span id="timeDate">正在载入天数...</span>
+    <span id="times">载入时分秒...</span>
+    <script>
+    var now = new Date();
+    function createtime(){
+        var grt= new Date("08/17/2020 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24;
+        dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum);
+        hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){
+            hnum = "0" + hnum;
+        }
+        minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes);
+        if(String(mnum).length ==1 ){
+                  mnum = "0" + mnum;
+        }
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds);
+        if(String(snum).length ==1 ){
+                  snum = "0" + snum;
+        }
+        document.getElementById("timeDate").innerHTML = "🚀已持续航行&nbsp"+dnum+"&nbsp天";  
+        document.getElementById("times").innerHTML = hnum + "&nbsp时&nbsp" + mnum + "&nbsp分&nbsp" + snum + "&nbsp秒";
+    }
+    setInterval("createtime()",250);
+    </script>
+  </div>
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom.js"></script>
+<script src="/js/snow.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

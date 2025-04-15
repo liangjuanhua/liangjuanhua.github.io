@@ -1,0 +1,767 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/2.png">
+  <link rel="icon" href="/img/2.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="淡黄的cherry">
+  <meta name="keywords" content="">
+  <meta name="referrer" content="no-referrer">
+  
+    <meta name="description" content="K8S + 容器的云原生生态，改变了服务的交付方式，自愈能力和自动扩缩等功能简直不要太好用。 有好的地方咱要夸，不好的地方咱也要说，真正的业务是部署于容器内部，而容器之外，又有一逻辑层 Pod 。 对于容器和 K8S 不怎么熟悉的人，一旦程序发生了问题，排查问题就是个头疼的问题。 问题描述事情的主角是 kubevirt 的一个开源项目叫 cdi，它的用途是在虚拟机启动之前将虚拟机的镜像导入到系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OOM排查思路">
+<meta property="og:url" content="http://example.com/2025/04/15/OOM%E6%8E%92%E6%9F%A5%E6%80%9D%E8%B7%AF/index.html">
+<meta property="og:site_name" content="cherry">
+<meta property="og:description" content="K8S + 容器的云原生生态，改变了服务的交付方式，自愈能力和自动扩缩等功能简直不要太好用。 有好的地方咱要夸，不好的地方咱也要说，真正的业务是部署于容器内部，而容器之外，又有一逻辑层 Pod 。 对于容器和 K8S 不怎么熟悉的人，一旦程序发生了问题，排查问题就是个头疼的问题。 问题描述事情的主角是 kubevirt 的一个开源项目叫 cdi，它的用途是在虚拟机启动之前将虚拟机的镜像导入到系统">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/cd1012d805b44daca936117c8b9876aa.png">
+<meta property="article:published_time" content="2025-04-15T09:56:08.000Z">
+<meta property="article:modified_time" content="2025-04-15T09:57:50.341Z">
+<meta property="article:author" content="淡黄的cherry">
+<meta property="article:tag" content="故障案例">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/cd1012d805b44daca936117c8b9876aa.png">
+  
+  
+  
+  <title>OOM排查思路 - cherry</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/macpanel.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong class="navbar-title">cherryの技术文档</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="OOM排查思路"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-15 17:56" pubdate>
+          2025年4月15日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">OOM排查思路</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p> K8S + 容器的云原生生态，改变了服务的交付方式，自愈能力和自动扩缩等功能简直不要太好用。</p>
+<p>有好的地方咱要夸，不好的地方咱也要说，真正的业务是部署于容器内部，而容器之外，又有一逻辑层 Pod 。</p>
+<p>对于容器和 K8S 不怎么熟悉的人，一旦程序发生了问题，排查问题就是个头疼的问题。</p>
+<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>事情的主角是 kubevirt 的一个开源项目叫 cdi，它的用途是在虚拟机启动之前将虚拟机的镜像导入到系统盘中。</p>
+<p>在使用过程中，我们发现 cdi 在导入数据时会占用大量的内存空间。</p>
+<p>而 cdi-controller 在创建 cdi-importer 的 pod 时，默认限定其最高只能使用 600M 的内存，到最后呢，pod 就发生了 OOMKilled</p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs autoit">[root<span class="hljs-symbol">@master01</span> ~]<span class="hljs-meta"># kubectl get po</span><br>NAME                               READY   STATUS      RESTARTS   AGE<br>importer-wbm-vda          <span class="hljs-number">0</span>/<span class="hljs-number">1</span>     OOMKilled   <span class="hljs-number">1</span>          <span class="hljs-number">76</span>s<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<h2 id="一、查看-Pod-状态"><a href="#一、查看-Pod-状态" class="headerlink" title="一、查看 Pod 状态"></a><strong>一、查看 Pod 状态</strong></h2><p>首先，检查相关 Pod 的状态，确定是否因为内存超限被杀死。</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino">[root@master01 ~]<span class="hljs-meta"># kubectl describe pod <span class="hljs-string">&lt;pod-name&gt;</span> -n <span class="hljs-string">&lt;namespace&gt;</span></span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p><strong>定位关键词</strong></p>
+<p>如果容器因为 OOM 被杀死，通常会显示如下信息</p>
+<figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs avrasm"><span class="hljs-symbol">State:</span>     Terminated<br><span class="hljs-symbol">Reason:</span>    OOMKilled<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p><strong>查看 <code>Events</code> 部分：</strong></p>
+<p>如果 Pod 因为内存不足而被 OOM Killer 杀死，你会在事件中看到类似的提示</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs pgsql"><span class="hljs-built_in">Warning</span>  OOMKilling  kubelet, &lt;node-<span class="hljs-type">name</span>&gt;  Memory cgroup <span class="hljs-keyword">out</span> <span class="hljs-keyword">of</span> memory: Kill process<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<h2 id="二、查看容器日志"><a href="#二、查看容器日志" class="headerlink" title="二、查看容器日志"></a>二、查看容器日志</h2><p>如果 Pod 被杀死，可以通过查看容器日志，了解容器在发生 OOM 之前的行为。这有助于判断是否存在内存泄漏或内存使用过高的情况</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">[root@master01 ~]<span class="hljs-meta"># kubectl logs <span class="hljs-string">&lt;pod-name&gt;</span> -n <span class="hljs-string">&lt;namespace&gt;</span> --previous</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<ul>
+<li>使用 <code>--previous</code> 参数查看被终止容器的日志。</li>
+<li>如果容器在 OOM 之前没有记录错误信息，通常表示容器已经用尽了可用内存，导致进程直接被杀死。</li>
+</ul>
+<h2 id="三、查看-Kubelet-和-Node-日志"><a href="#三、查看-Kubelet-和-Node-日志" class="headerlink" title="三、查看 Kubelet 和 Node 日志"></a>三、查看 Kubelet 和 Node 日志</h2><p><strong>查看 Kubelet 日志</strong></p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs autoit">[root<span class="hljs-symbol">@master01</span> ~]<span class="hljs-meta"># journalctl -u kubelet -f</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p><strong>或者直接查找与 OOM 相关的日志</strong></p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs autoit">[root<span class="hljs-symbol">@master01</span> ~]<span class="hljs-meta"># journalctl -u kubelet | grep -i <span class="hljs-string">&#x27;oom&#x27;</span></span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p><strong>查看 Node 上的 <code>dmesg</code> 日志，确认是否存在 OOM Killer 杀死进程的记录</strong></p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs autoit">[root<span class="hljs-symbol">@master01</span> ~]<span class="hljs-meta"># dmesg | grep -i <span class="hljs-string">&#x27;oom&#x27;</span></span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<h2 id="四、查看资源限制（CPU-和内存）"><a href="#四、查看资源限制（CPU-和内存）" class="headerlink" title="四、查看资源限制（CPU 和内存）"></a>四、查看资源限制（CPU 和内存）</h2><p>确保 Pod 的资源限制配置正确。如果 Pod 的内存限制（<code>memory limit</code>）设置得太低，可能会导致 OOM 错误</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino">[root@master01 ~]<span class="hljs-meta"># kubectl get pod <span class="hljs-string">&lt;pod-name&gt;</span> -n <span class="hljs-string">&lt;namespace&gt;</span> -o yaml</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>检查 <code>resources</code> 配置</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs dts"><span class="hljs-symbol">resources:</span><br><span class="hljs-symbol">  requests:</span><br><span class="hljs-symbol">    memory:</span> <span class="hljs-string">&quot;256Mi&quot;</span><br><span class="hljs-symbol">    cpu:</span> <span class="hljs-string">&quot;250m&quot;</span><br><span class="hljs-symbol">  limits:</span><br><span class="hljs-symbol">    memory:</span> <span class="hljs-string">&quot;512Mi&quot;</span><br><span class="hljs-symbol">    cpu:</span> <span class="hljs-string">&quot;500m&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<h2 id="五、分析容器内存使用"><a href="#五、分析容器内存使用" class="headerlink" title="五、分析容器内存使用"></a>五、分析容器内存使用</h2><p>查看容器的内存使用情况，确认容器是否超过了内存限制。可以使用 <strong><code>kubectl top</code></strong> 来查看资源使用情况</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino">[root@master01 ~]<span class="hljs-meta"># kubectl top pod <span class="hljs-string">&lt;pod-name&gt;</span> -n <span class="hljs-string">&lt;namespace&gt;</span></span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<ul>
+<li>该命令会显示容器当前的内存和 CPU 使用情况。</li>
+<li>比较容器的 <code>memory usage</code> 和 <code>memory limit</code>，如果容器接近其内存限制，就可能发生 OOM 错误。</li>
+</ul>
+<h2 id="六、分析节点内存压力"><a href="#六、分析节点内存压力" class="headerlink" title="六、分析节点内存压力"></a>六、分析节点内存压力</h2><p>OOM 错误可能不仅仅是由于容器本身的内存使用高导致的，也可能是因为节点的整体内存资源不足</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs coffeescript">[root@master01 ~]<span class="hljs-comment"># kubectl describe node &lt;node-name&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<h2 id="七、检查内存泄漏"><a href="#七、检查内存泄漏" class="headerlink" title="七、检查内存泄漏"></a>七、检查内存泄漏</h2><p>如果某个容器频繁 OOM，并且它的内存使用量持续增长，可能是程序中存在内存泄漏</p>
+<figure class="highlight brainfuck"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs brainfuck"><span class="hljs-title">[</span><span class="hljs-comment">root@master01 ~</span><span class="hljs-title">]</span><span class="hljs-comment"># vmstat 1</span><br><span class="hljs-comment">procs</span> <span class="hljs-literal">-----------</span><span class="hljs-comment">memory</span><span class="hljs-literal">----------</span> <span class="hljs-literal">---</span><span class="hljs-comment">swap</span><span class="hljs-literal">--</span> <span class="hljs-literal">-----</span><span class="hljs-comment">io</span><span class="hljs-literal">----</span> <span class="hljs-literal">-</span><span class="hljs-comment">system</span><span class="hljs-literal">--</span> <span class="hljs-literal">-------</span><span class="hljs-comment">cpu</span><span class="hljs-literal">-------</span><br> <span class="hljs-comment">r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu</span><br> <span class="hljs-comment">1  0      0 3099200 590472 1748204    0    0     3    37  527    1  0  0 99  0  0  0</span><br> <span class="hljs-comment">0  0      0 3100144 590472 1748244    0    0     0     0  580  501  0  0 100  0  0  0</span><br> <span class="hljs-comment">0  0      0 3100708 590472 1748244    0    0     0     0  627  478  0  0 100  0  0  0</span><br> <span class="hljs-comment">0  0      0 3096128 590472 1748244    0    0     0     0 1628 1672  1  1 98  0  0  0</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<h2 id="八、设置合理的资源限制"><a href="#八、设置合理的资源限制" class="headerlink" title="八、设置合理的资源限制"></a>八、设置合理的资源限制</h2><p>为了避免 OOM 问题的再次发生，确保设置合理的内存请求（<code>requests</code>）和限制（<code>limits</code>）</p>
+<ul>
+<li>**<code>requests</code>**：表示容器启动时需要的最小内存。Kubernetes 会根据 <code>requests</code> 为容器分配内存，确保容器有足够的资源启动。</li>
+<li>**<code>limits</code>**：表示容器可以使用的最大内存。容器使用超过该限制的内存会被 OOM Killer 杀死。</li>
+</ul>
+<h2 id="九、缓存问题"><a href="#九、缓存问题" class="headerlink" title="九、缓存问题"></a>九、缓存问题</h2><p>通过不断的 Google 搜索，我查到了 kubectl top 得到的内存使用数据原来是这么计算的</p>
+<figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mel"><span class="hljs-keyword">memory</span>.usage_in_bytes-total_inactive_file<br></code></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>从这个公式可以看出， kubectl top 得到的内存使用数据原来是包含 cache 的。</p>
+<p>正常的 cache 可以提高磁盘数据的读写数据，在读的时候，会拷贝一份文件数据放到内存中，这部分是可回收的，一旦程序内存不足了，会回收部分 cache 的空间，保证程序的正常运行。</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/cd1012d805b44daca936117c8b9876aa.png" srcset="/img/loading.gif" lazyload alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p>可见读文件的缓存，不会影响内存的申请，更别说 OOM，但在写的时候，情况就不一样了</p>
+<p>在写的时候，由于进程处理数据的速度，可能会远大于数据落盘的速度，所以为提高格式转化和数据导入的速度，一般会先将转化好的数据存入缓存中，存入缓存后，进程可以立马 return 回去继续下一堆数据的处理，不用傻傻地等待数据全写入磁盘。</p>
+<p>而存在于缓存之中的数据，则由操作系统同步写入磁盘，这样一来，数据落盘就变成了一个异步的过程，大大提高了写入的速度。</p>
+<p>如果 qemu-img 处理数据的速度远大于 cache 存入磁盘的速度，就会出现内存不足。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/kubernetes/" class="category-chain-item">kubernetes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%85%E9%9A%9C%E6%A1%88%E4%BE%8B/" class="print-no-link">#故障案例</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>OOM排查思路</div>
+      <div>http://example.com/2025/04/15/OOM排查思路/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>淡黄的cherry</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月15日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/15/%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0%E5%B8%A6%E4%BD%A0%E6%90%9E%E5%AE%9Adocker/" title="一篇文章带你搞定docker">
+                        <span class="hidden-mobile">一篇文章带你搞定docker</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  <div>
+    <span id="timeDate">正在载入天数...</span>
+    <span id="times">载入时分秒...</span>
+    <script>
+    var now = new Date();
+    function createtime(){
+        var grt= new Date("08/17/2020 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24;
+        dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum);
+        hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){
+            hnum = "0" + hnum;
+        }
+        minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes);
+        if(String(mnum).length ==1 ){
+                  mnum = "0" + mnum;
+        }
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds);
+        if(String(snum).length ==1 ){
+                  snum = "0" + snum;
+        }
+        document.getElementById("timeDate").innerHTML = "🚀已持续航行&nbsp"+dnum+"&nbsp天";  
+        document.getElementById("times").innerHTML = hnum + "&nbsp时&nbsp" + mnum + "&nbsp分&nbsp" + snum + "&nbsp秒";
+    }
+    setInterval("createtime()",250);
+    </script>
+  </div>
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom.js"></script>
+<script src="/js/snow.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

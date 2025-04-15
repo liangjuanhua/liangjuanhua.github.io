@@ -20,23 +20,23 @@
   <meta name="keywords" content="">
   <meta name="referrer" content="no-referrer">
   
-    <meta name="description" content="之前我们已经部署了k8s和harbor仓库，本次来部署下jenkins和gitlab实现持续集成。 概念 持续集成是开发团队通过将代码的不同部分集成到共享存储库中，并频繁地进行构建和测试，以确保代码的一致性和稳定性。 流程 在现在的开发模式中，一般的项目，协同开发是离不开的，这就涉及到多个开发人员编写处理自己负责的功能模块或者某些开发人员共同负责一个模块。于是，通过版本控制系统可以将各个开发人员">
+    <meta name="description" content="之前我们已经部署了k8s和harbor仓库，本次来部署下jenkins和gitlab实现持续集成。 概念 持续集成是开发团队通过将代码的不同部分集成到共享存储库中，并频繁地进行构建和测试，以确保代码的一致性和稳定性。 流程 在现在的开发模式中，一般的项目，协同开发是离不开的，这就涉及到多个开发人员编写处理自己负责的功能模块或者某些开发人员共同负责一个模块。于是，通过版本控制系统可以将各个开发人员的">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Jenkins+gitlab持续集成">
 <meta property="og:url" content="http://example.com/2025/04/15/Jenkins-gitlab%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/index.html">
 <meta property="og:site_name" content="cherry">
-<meta property="og:description" content="之前我们已经部署了k8s和harbor仓库，本次来部署下jenkins和gitlab实现持续集成。 概念 持续集成是开发团队通过将代码的不同部分集成到共享存储库中，并频繁地进行构建和测试，以确保代码的一致性和稳定性。 流程 在现在的开发模式中，一般的项目，协同开发是离不开的，这就涉及到多个开发人员编写处理自己负责的功能模块或者某些开发人员共同负责一个模块。于是，通过版本控制系统可以将各个开发人员">
+<meta property="og:description" content="之前我们已经部署了k8s和harbor仓库，本次来部署下jenkins和gitlab实现持续集成。 概念 持续集成是开发团队通过将代码的不同部分集成到共享存储库中，并频繁地进行构建和测试，以确保代码的一致性和稳定性。 流程 在现在的开发模式中，一般的项目，协同开发是离不开的，这就涉及到多个开发人员编写处理自己负责的功能模块或者某些开发人员共同负责一个模块。于是，通过版本控制系统可以将各个开发人员的">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/e1515ec05a604141a51fb41866f3b4f8.png">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/fb5658f33a674aaf8f16a7198b9da4e5.png">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/105460e20071422b84d3861c09145a54.png">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/5c919d64bb60497db248332c7ba4d376.png">
-<meta property="og:image" content="http://example.com/Untitled.assets/b6d8f708686a4daf973f86a9fb8c4fcc.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/b6d8f708686a4daf973f86a9fb8c4fcc.png">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/2e48d1b82ed74ec0971cfbdf1214a888.png">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/9ae3dd35c62e4146a54b59671f70bf2d.png">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/a7d21a5248714edf8437ae6646f79ff3.png">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/ea6267f5b46a4537a65173d42916acad.png">
-<meta property="og:image" content="http://example.com/Untitled.assets/2c004cf24a564d328fea29af1008bd8a.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/2c004cf24a564d328fea29af1008bd8a.png">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/aaf8e8f036024678a602c833150fc730.png">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/9d9589fef0c24fde925ab1874fbd4a99.png">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/9fda0fb6a0e74337b433cc67a415c1ef.png">
@@ -56,7 +56,7 @@
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/962a11f4e4c1450d8cee1548aa69720a.png">
 <meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/81321be1610f45fd921b4341abf05b57.png">
 <meta property="article:published_time" content="2025-04-15T09:20:01.000Z">
-<meta property="article:modified_time" content="2025-04-15T09:23:28.392Z">
+<meta property="article:modified_time" content="2025-04-15T09:29:16.722Z">
 <meta property="article:author" content="淡黄的cherry">
 <meta property="article:tag" content="cicd">
 <meta name="twitter:card" content="summary_large_image">
@@ -310,7 +310,7 @@
             
               <div class="markdown-body">
                 
-                <p> 之前我们已经部署了k8s和harbor仓库，本次来部署下jenkins和gitlab实现持续集成。</p>
+                <p>之前我们已经部署了k8s和harbor仓库，本次来部署下jenkins和gitlab实现持续集成。</p>
 <p><strong>概念</strong></p>
 <p>持续集成是开发团队通过将代码的不同部分集成到共享存储库中，并频繁地进行构建和测试，以确保代码的一致性和稳定性。</p>
 <p><strong>流程</strong><br> 在现在的开发模式中，一般的项目，协同开发是离不开的，这就涉及到多个开发人员编写处理自己负责的功能模块或者某些开发人员共同负责一个模块。于是，通过版本控制系统可以将各个开发人员的代码集成在该共享存储库里，在存储库里，每个开发人员根据需求的不同来创建对应的分支，在完成需求后，每个人都需要提交合并将开发分支代码集成在一起，这就需要解决代码冲突，并且如何除了code review之外如何确保这些更改对应用没有产生影响，一旦提交请求合并到主分支，自动化构建工具就会根据流程自动编译构建安装应用，并执行单元测试框架的自动化测试来校验提交的修改。</p>
@@ -361,7 +361,7 @@
 <figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs swift">[root<span class="hljs-meta">@jenkins211</span> <span class="hljs-operator">~</span>]# ln <span class="hljs-operator">-</span>svf <span class="hljs-regexp">/usr/</span>share<span class="hljs-regexp">/zoneinfo/</span><span class="hljs-type">Asia</span><span class="hljs-regexp">/Shanghai /</span>etc<span class="hljs-operator">/</span>localtime<br>&#x27;<span class="hljs-regexp">/etc/</span>localtime&#x27; -&gt; &#x27;<span class="hljs-regexp">/usr/</span>share<span class="hljs-regexp">/zoneinfo/</span><span class="hljs-type">Asia</span><span class="hljs-operator">/</span><span class="hljs-type">Shanghai</span>&#x27;<br></code></pre></td></tr></table></figure>
 
 <p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
-<p><img src="/Untitled.assets/b6d8f708686a4daf973f86a9fb8c4fcc.png" srcset="/img/loading.gif" lazyload alt="b6d8f708686a4daf973f86a9fb8c4fcc.png"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/b6d8f708686a4daf973f86a9fb8c4fcc.png" srcset="/img/loading.gif" lazyload alt="b6d8f708686a4daf973f86a9fb8c4fcc.png"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
 <p>9.修改jenkins软件源</p>
 <figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs swift">[root<span class="hljs-meta">@jenkins211</span> <span class="hljs-operator">~</span>]# sed <span class="hljs-operator">-</span>i.bak &#x27;s#updates.jenkins.io<span class="hljs-regexp">/download#mirror.tuna.tsinghua.edu.cn/</span>jenkins#g&#x27; <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/jenkins/</span>updates<span class="hljs-operator">/</span><span class="hljs-keyword">default</span>.json<br></code></pre></td></tr></table></figure>
 
@@ -410,7 +410,7 @@
 <p>点击偏好设置</p>
 <p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/ea6267f5b46a4537a65173d42916acad.png" srcset="/img/loading.gif" lazyload alt="ea6267f5b46a4537a65173d42916acad.png"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
 <p>选择中文–&gt;保存</p>
-<p><img src="/Untitled.assets/2c004cf24a564d328fea29af1008bd8a.png" srcset="/img/loading.gif" lazyload alt="2c004cf24a564d328fea29af1008bd8a.png"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动">8.开启本地网络请求</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/2c004cf24a564d328fea29af1008bd8a.png" srcset="/img/loading.gif" lazyload alt="2c004cf24a564d328fea29af1008bd8a.png"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动">8.开启本地网络请求</p>
 <p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/aaf8e8f036024678a602c833150fc730.png" srcset="/img/loading.gif" lazyload alt="aaf8e8f036024678a602c833150fc730.png"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
 <h2 id="三、gitlab集成jenkins"><a href="#三、gitlab集成jenkins" class="headerlink" title="三、gitlab集成jenkins"></a>三、gitlab集成jenkins</h2><p>1.创建群组</p>
 <p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/9d9589fef0c24fde925ab1874fbd4a99.png" srcset="/img/loading.gif" lazyload alt="9d9589fef0c24fde925ab1874fbd4a99.png"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" srcset="/img/loading.gif" lazyload alt="点击并拖拽以移动"></p>
@@ -575,6 +575,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2025/04/15/jenkins-gitlab-docker-harbor-k8s%E7%BB%88%E7%BB%93%E7%AF%87/" title="jenkins+gitlab+docker+harbor+k8s终结篇">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">jenkins+gitlab+docker+harbor+k8s终结篇</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
