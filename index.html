@@ -232,15 +232,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/04/12/msf%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E4%B9%8B%E6%B0%B8%E6%81%92%E4%B9%8B%E8%93%9D/" target="_self">
-          msf渗透测试之永恒之蓝
+        <a href="/2025/04/15/Jenkins-gitlab%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/" target="_self">
+          Jenkins+gitlab持续集成
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/12/msf%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E4%B9%8B%E6%B0%B8%E6%81%92%E4%B9%8B%E8%93%9D/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/Jenkins-gitlab%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/" target="_self">
         <div>
-          实验环境前提：对方的445端口必须开放,首先要保证是能够访问到目标机器的，那么我们先ping一下目标机器，看网络是否连通 如果无法ping的话，对方机器必须要关闭防火墙，或许有其他方法在对方开启防火墙的情况下访问到对方？目前采用关闭防火墙 使用工具：kali 靶机：windows 7  ip：10.0.0.128 攻击机器：kali IP：10.0.0.139 Metasploit就是一个漏洞框架
+          之前我们已经部署了k8s和harbor仓库，本次来部署下jenkins和gitlab实现持续集成。 概念 持续集成是开发团队通过将代码的不同部分集成到共享存储库中，并频繁地进行构建和测试，以确保代码的一致性和稳定性。 流程 在现在的开发模式中，一般的项目，协同开发是离不开的，这就涉及到多个开发人员编写处理自己负责的功能模块或者某些开发人员共同负责一个模块。于是，通过版本控制系统可以将各个开发人员
         </div>
       </a>
 
@@ -248,8 +248,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-12 17:24" pubdate>
-              2025-04-12
+            <time datetime="2025-04-15 17:20" pubdate>
+              2025-04-15
             </time>
           </div>
         
@@ -264,7 +264,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" class="category-chain-item">网络安全</a>
+  <a href="/categories/cicd/" class="category-chain-item">cicd</a>
   
   
 
@@ -279,7 +279,556 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E6%B8%97%E9%80%8F%E7%9B%B8%E5%85%B3/">#渗透相关</a>
+              <a href="/tags/cicd/">#cicd</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/15/K8s-%E7%BD%91%E7%BB%9C%E6%9C%BA%E5%88%B6/" target="_self">
+          K8s 网络机制
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/K8s-%E7%BD%91%E7%BB%9C%E6%9C%BA%E5%88%B6/" target="_self">
+        <div>
+          概述Service 作为 K8s 中的一等公民，其承载了核心容器网络的访问管理能力，包括：  暴露&#x2F;访问一组 Pod 的能力 Pod 访问集群内、集群外服务 集群外客户端访问集群内 Pod 的服务  无论是作为应用的开发者还是使用者，一般都需要先经过 Service 才会访问到真正的目标 Pod。因此熟悉 Service 网络管理机制将会使我们更加深入理解 K8s 的容器编排原理， 本文
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-15 17:10" pubdate>
+              2025-04-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%BD%91%E7%BB%9C%E7%AF%87/" class="category-chain-item">网络篇</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E7%BD%91%E7%BB%9C%E7%AF%87/">#网络篇</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/15/prometheus-Grafana-k8s%E5%85%A8%E6%96%B9%E4%BD%8D%E6%95%99%E5%AD%A6/" target="_self">
+          prometheus+Grafana+k8s全方位教学
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/prometheus-Grafana-k8s%E5%85%A8%E6%96%B9%E4%BD%8D%E6%95%99%E5%AD%A6/" target="_self">
+        <div>
+          1、架构图 2、组件Prometheus Server用于收集和存储时间序列数据。Prometheus Server 是 Prometheus 组件中的核心部分，负责实现对监控数据的获取，存储以及查询。 Prometheus Server 可以通过静态配置管理监控目标，也可以配合使用 Service Discovery 的方式动态管理监控目标，并从这些监控目标中获取数据。其次 Prometheus
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-15 17:06" pubdate>
+              2025-04-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%9B%91%E6%8E%A7%E7%AF%87/" class="category-chain-item">监控篇</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E7%9B%91%E6%8E%A7%E7%AF%87/">#监控篇</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/15/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7%E4%B9%8BLiquibase/" target="_self">
+          数据库版本管理工具之Liquibase
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7%E4%B9%8BLiquibase/" target="_self">
+        <div>
+          一、liquibase介绍研发过程中经常涉及到数据库变更，对表结构的修复及对数据的修改，为了保证各环境都能正确的进行变更我们可能需要维护一个数据库升级文档来保存这些记录，有需要升级的环境按文档进行升级。 这样手工维护有几个缺点：  无法保证每个环境都按要求执行 遇到问题不一定有相对的回滚语句 无法自动化  为了解决这些问题，我们进行了一些调研，主要调研对象是Liquibase和Flyway，我们希
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-15 17:04" pubdate>
+              2025-04-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/linux/" class="category-chain-item">linux</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/linux%E4%B8%AD%E9%97%B4%E4%BB%B6/">#linux中间件</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/15/WireGuard%E5%AE%9E%E7%8E%B0%E5%BC%82%E5%9C%B0%E7%BB%84%E7%BD%91/" target="_self">
+          WireGuard实现异地组网
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/WireGuard%E5%AE%9E%E7%8E%B0%E5%BC%82%E5%9C%B0%E7%BB%84%E7%BD%91/" target="_self">
+        <div>
+          WireGuard是一个易于配置、快速、安全的基于UDP协议的开源VPN软件。Wireguard具有自定义配置路由转发的能力，所以可以被用来在多个不同地域将设备所在的内网网络通过路由转发的方式串通起来，组建一张属于自己的大内网！有时候，我们想将本地计算机上提供的服务与小伙伴分享，但是我们既没有公网IP，又希望能够有足够的安全性，避免使其暴露在公网上。因此，我们基于Wireguard这一项最基本的
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-15 17:00" pubdate>
+              2025-04-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/linux/" class="category-chain-item">linux</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/linux%E4%B8%AD%E9%97%B4%E4%BB%B6/">#linux中间件</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/15/mailu%E8%87%AA%E5%BB%BA%E9%82%AE%E4%BB%B6%E6%9C%8D%E5%8A%A1/" target="_self">
+          mailu自建邮件服务
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/mailu%E8%87%AA%E5%BB%BA%E9%82%AE%E4%BB%B6%E6%9C%8D%E5%8A%A1/" target="_self">
+        <div>
+          引言mailu是一个运行在docker上的免费邮件服务器，易于安装，易于使用且易于维护。如果你想在Linux 上快速搭建邮箱服务器，mailu是一个不错的选择。 一、安装docker和docker-compose相对简单，自行安装即可，可以看cicd专栏-kubeadm部署k8s中一键部署docker脚本。 二、Mailu配置获取官方自动生成docker-compose.yaml文件。打开网站：M
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-15 16:50" pubdate>
+              2025-04-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/linux/" class="category-chain-item">linux</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/linux%E4%B8%AD%E9%97%B4%E4%BB%B6/">#linux中间件</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/15/harbor%E9%83%A8%E7%BD%B2/" target="_self">
+          harbor部署
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/harbor%E9%83%A8%E7%BD%B2/" target="_self">
+        <div>
+          一、安装docker这里我们直接使用docker脚本安装，关于脚本上一篇博文有写，感兴趣的朋友可以参考一下 123456789101112131.部署docker和docker-compose 1.1 解压软件包[root@harbor ~]# tar xf docker-docker-compose.tar.gz 1.2 安装docker和docker-compose运行时[root@harbo
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-15 16:44" pubdate>
+              2025-04-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/cicd/" class="category-chain-item">cicd</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/cicd/">#cicd</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/15/kubeadm-%E9%83%A8%E7%BD%B2k8s/" target="_self">
+          kubeadm 部署k8s
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/kubeadm-%E9%83%A8%E7%BD%B2k8s/" target="_self">
+        <div>
+          闲聊考虑了很久，打算写一篇保姆级部署从0-1构建企业级cicd流水线，把工作上面所用到的技术点分享给大家。从最k8s，harbor，jenkins，gitlab，docker的详细部署到集成。前后端流水线的构建，发布等…如果以下内容有不足的地方，请指出，我会第一时间更正。谢谢大家。 先上一下手绘导图，大致的流程图如下：大致的部署流程是这样的：开发人员把做好的asp.net core项目代码通过gi
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-15 16:41" pubdate>
+              2025-04-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/cicd/" class="category-chain-item">cicd</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/cicd/">#cicd</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/15/datax%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/" target="_self">
+          datax实现数据同步
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/datax%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/" target="_self">
+        <div>
+          datax介绍DataX 是阿里云的离线数据同步工具，它通过 JDBC 连接 MySQL 数据库，发送 SQL 语句获取数据缓存在本地 JVM中，然后通过 Writer 线程将数据写入到表格存储的数据表中。 部署datax1、下载datax 12wget http://datax-opensource.oss-cn-hangzhou.aliyuncs.com/datax.tar.gz    2、安
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-15 16:37" pubdate>
+              2025-04-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/linux/" class="category-chain-item">linux</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/linux%E4%B8%AD%E9%97%B4%E4%BB%B6/">#linux中间件</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/15/pod%E7%8A%B6%E6%80%81%E6%8E%92%E6%9F%A5%E6%80%9D%E8%B7%AF/" target="_self">
+          pod状态排查思路
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/pod%E7%8A%B6%E6%80%81%E6%8E%92%E6%9F%A5%E6%80%9D%E8%B7%AF/" target="_self">
+        <div>
+          Terminating Pending ContainerCreating-Waiting CrashLoopBackOff ImagePullBackOff  Terminating有时候删除 Pod 一直卡在 Terminating 状态，一直删不掉，可以从以下方面进行排查。 分析思路一、首先我们先了解下pod的删除流程：  APIServer 收到删除 Pod 的请求，Pod 被标记删除，
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-15 16:34" pubdate>
+              2025-04-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/kubernetes/" class="category-chain-item">kubernetes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E6%95%85%E9%9A%9C%E6%A1%88%E4%BE%8B/">#故障案例</a>
             
           </div>
         
@@ -288,6 +837,12 @@
   </div>
 
 
+
+  <nav aria-label="navigation">
+    <span class="pagination" id="pagination">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/#board">2</a><a class="extend next" rel="next" href="/page/2/#board"><i class="iconfont icon-arrowright"></i></a>
+    </span>
+  </nav>
 
 
 
