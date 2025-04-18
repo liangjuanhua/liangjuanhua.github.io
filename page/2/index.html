@@ -232,15 +232,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/04/16/Kubernetes-%E5%B8%B8%E7%94%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E6%8F%92%E4%BB%B6/" target="_self">
-          Kubernetes 常用的网络插件
+        <a href="/2025/04/18/jenkins-gitlab-docker-harbor-k8s%E7%BB%88%E7%BB%93%E7%AF%87/" target="_self">
+          jenkins+gitlab+docker+harbor+k8s终结篇
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/Kubernetes-%E5%B8%B8%E7%94%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E6%8F%92%E4%BB%B6/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/18/jenkins-gitlab-docker-harbor-k8s%E7%BB%88%E7%BB%93%E7%AF%87/" target="_self">
         <div>
-          上篇内容跟大家简单聊了k8s网络模型原理。分别围绕着容器、Pod、Service、网络策略等展开了详细的讲解。这次想跟大家聊聊k8s的CNI网络插件。 CNI 是 Kubernetes 网络模型的核心组件，它是一个插件接口，允许用户选择和配置网络插件来管理 Pod 的网络。CNI 插件提供了网络连接、IP 地址分配、路由控制等基本功能。 常见的 CNI 插件包括： Flannel：用于实现简单的
+          之前我们已经把相关环境，持续集成这一块都实现了。详细内容可查看我cicd专栏前三篇的内容。 kubeadm 部署k8s-CSDN博客  harbor部署-CSDN博客 Jenkins+gitlab持续集成_gitlab jenkins 集成-CSDN博客 本篇内容主要是讲解持续集成和持续交付是如何实现和部署的。 概念 持续交付建立在持续集成的基础上，通过自动化的流程确保软件可以随时随地进行部署。
         </div>
       </a>
 
@@ -248,8 +248,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-16 16:39" pubdate>
-              2025-04-16
+            <time datetime="2025-04-18 11:02" pubdate>
+              2025-04-18
             </time>
           </div>
         
@@ -264,7 +264,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E7%BD%91%E7%BB%9C%E7%AF%87/" class="category-chain-item">网络篇</a>
+  <a href="/categories/CICD/" class="category-chain-item">CICD</a>
   
   
 
@@ -279,7 +279,7 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E7%BD%91%E7%BB%9C%E7%AF%87/">#网络篇</a>
+              <a href="/tags/CICD/">#CICD</a>
             
           </div>
         
@@ -293,15 +293,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/04/16/%E4%B8%83%E5%B1%82%E5%92%8C%E5%9B%9B%E5%B1%82%E5%8C%BA%E5%88%AB%EF%BC%9F/" target="_self">
-          七层和四层区别？
+        <a href="/2025/04/18/Jenkins-gitlab%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/" target="_self">
+          Jenkins+gitlab持续集成
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/%E4%B8%83%E5%B1%82%E5%92%8C%E5%9B%9B%E5%B1%82%E5%8C%BA%E5%88%AB%EF%BC%9F/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/18/Jenkins-gitlab%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/" target="_self">
         <div>
-          四层和七层是网络协议栈中的两个不同层级，分别对应于 OSI 模型（开放系统互联模型）中的 传输层（Layer 4） 和 应用层（Layer 7）。这两者的主要区别在于它们操作的网络层级、协议、数据处理方式以及它们在应用中的作用。 1. OSI 模型概览OSI 模型共有 7 层，每一层都有不同的功能，分别是：  物理层（Layer 1）：负责数据传输的物理媒介和信号传递。 数据链路层（Layer
+          之前我们已经部署了k8s和harbor仓库，本次来部署下jenkins和gitlab实现持续集成。 概念 持续集成是开发团队通过将代码的不同部分集成到共享存储库中，并频繁地进行构建和测试，以确保代码的一致性和稳定性。 流程 在现在的开发模式中，一般的项目，协同开发是离不开的，这就涉及到多个开发人员编写处理自己负责的功能模块或者某些开发人员共同负责一个模块。于是，通过版本控制系统可以将各个开发人员
         </div>
       </a>
 
@@ -309,8 +309,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-16 16:37" pubdate>
-              2025-04-16
+            <time datetime="2025-04-18 10:51" pubdate>
+              2025-04-18
             </time>
           </div>
         
@@ -325,7 +325,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E7%BD%91%E7%BB%9C%E7%AF%87/" class="category-chain-item">网络篇</a>
+  <a href="/categories/CICD/" class="category-chain-item">CICD</a>
   
   
 
@@ -340,7 +340,7 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E7%BD%91%E7%BB%9C%E7%AF%87/">#网络篇</a>
+              <a href="/tags/CICD/">#CICD</a>
             
           </div>
         
@@ -354,15 +354,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/04/16/prometheus-Grafana-k8s%E5%85%A8%E6%96%B9%E4%BD%8D%E6%95%99%E5%AD%A6/" target="_self">
-          prometheus+Grafana+k8s全方位教学
+        <a href="/2025/04/18/harbor%E9%83%A8%E7%BD%B2/" target="_self">
+          harbor部署
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/prometheus-Grafana-k8s%E5%85%A8%E6%96%B9%E4%BD%8D%E6%95%99%E5%AD%A6/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/18/harbor%E9%83%A8%E7%BD%B2/" target="_self">
         <div>
-          1、架构图 2、组件Prometheus Server用于收集和存储时间序列数据。Prometheus Server 是 Prometheus 组件中的核心部分，负责实现对监控数据的获取，存储以及查询。 Prometheus Server 可以通过静态配置管理监控目标，也可以配合使用 Service Discovery 的方式动态管理监控目标，并从这些监控目标中获取数据。其次 Prometheus
+          一、安装docker这里我们直接使用docker脚本安装，关于脚本上一篇博文有写，感兴趣的朋友可以参考一下 123456789101112131.部署docker和docker-compose 1.1 解压软件包[root@harbor ~]# tar xf docker-docker-compose.tar.gz 1.2 安装docker和docker-compose运行时[root@harbo
         </div>
       </a>
 
@@ -370,8 +370,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-16 16:34" pubdate>
-              2025-04-16
+            <time datetime="2025-04-18 10:48" pubdate>
+              2025-04-18
             </time>
           </div>
         
@@ -386,7 +386,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E7%9B%91%E6%8E%A7%E7%AF%87/" class="category-chain-item">监控篇</a>
+  <a href="/categories/CICD/" class="category-chain-item">CICD</a>
   
   
 
@@ -401,7 +401,7 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E7%9B%91%E6%8E%A7%E7%AF%87/">#监控篇</a>
+              <a href="/tags/CICD/">#CICD</a>
             
           </div>
         
@@ -415,15 +415,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/04/16/ELFK%E6%97%A5%E5%BF%97%E9%87%87%E9%9B%86%E5%AE%9E%E6%88%98/" target="_self">
-          ELFK日志采集实战
+        <a href="/2025/04/18/kubeadm-%E9%83%A8%E7%BD%B2k8s/" target="_self">
+          kubeadm 部署k8s
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/ELFK%E6%97%A5%E5%BF%97%E9%87%87%E9%9B%86%E5%AE%9E%E6%88%98/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/18/kubeadm-%E9%83%A8%E7%BD%B2k8s/" target="_self">
         <div>
-          一、日志分析概述 日志分析是运维工程师解决系统故障，发现问题的主要手段 日志主要包括系统日志、应用程序日志和安全日志 系统运维和开发人员可以通过日志了解服务器软硬件信息、检查配置过程中的错误及错误发生的原因 经常分析日志可以了解服务器的负荷，性能安全性，从而及时采取措施纠正错误  二、日志分析的作用 分析日志时刻监控系统运行的状态 分析日志来定位程序的bug 分析日志监控网站的访问流量 分析日志可
+          闲聊考虑了很久，打算写一篇保姆级部署从0-1构建企业级cicd流水线，把工作上面所用到的技术点分享给大家。从最k8s，harbor，jenkins，gitlab，docker的详细部署到集成。前后端流水线的构建，发布等…如果以下内容有不足的地方，请指出，我会第一时间更正。谢谢大家。 先上一下手绘导图，大致的流程图如下：大致的部署流程是这样的：开发人员把做好的asp.net core项目代码通过gi
         </div>
       </a>
 
@@ -431,8 +431,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-16 16:18" pubdate>
-              2025-04-16
+            <time datetime="2025-04-18 10:46" pubdate>
+              2025-04-18
             </time>
           </div>
         
@@ -447,7 +447,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E6%97%A5%E5%BF%97%E7%AF%87/" class="category-chain-item">日志篇</a>
+  <a href="/categories/CICD/" class="category-chain-item">CICD</a>
   
   
 
@@ -462,7 +462,7 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E6%97%A5%E5%BF%97%E7%AF%87/">#日志篇</a>
+              <a href="/tags/CICD/">#CICD</a>
             
           </div>
         
@@ -476,15 +476,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/04/16/Elasticsearch%E5%85%A5%E9%97%A8%E7%AF%87/" target="_self">
-          Elasticsearch入门篇
+        <a href="/2025/04/16/Cobbler-kickstart%E5%AE%9E%E7%8E%B0%E6%89%B9%E9%87%8F%E5%85%A8%E8%87%AA%E5%8A%A8%E8%A3%85%E6%9C%BA/" target="_self">
+          Cobbler+kickstart实现批量全自动装机
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/Elasticsearch%E5%85%A5%E9%97%A8%E7%AF%87/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/Cobbler-kickstart%E5%AE%9E%E7%8E%B0%E6%89%B9%E9%87%8F%E5%85%A8%E8%87%AA%E5%8A%A8%E8%A3%85%E6%9C%BA/" target="_self">
         <div>
-          1.介绍 Elasticsearch1.1.什么是 Elasticsearch？Elasticsearch 是一种开源的搜索和分析引擎，专门用于处理大规模的数据，并以非常快的速度进行搜索和分析。它基于一个叫做 Apache Lucene 的库构建，但与 Lucene 相比，Elasticsearch 提供了更多的功能和易用性，使其成为处理和分析数据的强大工具。 1.1.1.简单理解 Elastic
+          cobbler简介　　cobbler 是一个系统启动服务boot server,可以通过pxe得方式用来快速安装，重装系统，支持安装不同linux发行版和windows。这个工具是用python开发，方便小巧，15k行代码，使用简单得命令完成pxe网络安装环境配置，还可以管理dhcp，dns，yum包镜像。cobbler可以命令行，也可以web（cobbler-web）,还提供api接口，可以方便
         </div>
       </a>
 
@@ -492,7 +492,7 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-16 16:10" pubdate>
+            <time datetime="2025-04-16 17:34" pubdate>
               2025-04-16
             </time>
           </div>
@@ -508,7 +508,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E6%97%A5%E5%BF%97%E7%AF%87/" class="category-chain-item">日志篇</a>
+  <a href="/categories/Windows/" class="category-chain-item">Windows</a>
   
   
 
@@ -523,7 +523,7 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E6%97%A5%E5%BF%97%E7%AF%87/">#日志篇</a>
+              <a href="/tags/Windows/">#Windows</a>
             
           </div>
         
@@ -537,15 +537,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/04/16/EFK%E9%87%87%E9%9B%86k8s%E6%97%A5%E5%BF%97/" target="_self">
-          EFK采集k8s日志
+        <a href="/2025/04/16/%E5%B0%81%E8%A3%85%E4%B8%80%E4%B8%AA%E4%B8%93%E5%B1%9E%E8%87%AA%E5%B7%B1%E7%9A%84Windows-%E7%B3%BB%E7%BB%9F/" target="_self">
+          封装一个专属自己的Windows 系统
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/EFK%E9%87%87%E9%9B%86k8s%E6%97%A5%E5%BF%97/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/%E5%B0%81%E8%A3%85%E4%B8%80%E4%B8%AA%E4%B8%93%E5%B1%9E%E8%87%AA%E5%B7%B1%E7%9A%84Windows-%E7%B3%BB%E7%BB%9F/" target="_self">
         <div>
-          ​    在 Kubernetes 集群中，需要全面了解各个 pod 应用运行状态、故障排查和性能分析。但由于 Pod 是动态创建和销毁的，其日志分散且存储不持久，因此需要通过集中式日志采集方案，将日志收集到统一的平台并配置日志可视化分析和监控告警，以实现日志的可追溯性、实时监控和高效分析，从而提升运维效率和系统可靠性。 官网地址：日志架构 | Kubernetes 1.日志采集方案方案一：ds控
+          ​     因为我们公司属于零售行业，每次有新的门店开店，我们都需要安装大量我们自己软件和打印机驱动等，为了简化这种繁琐的工作和统一化管理，我们选择封装自己的iso镜像。插入u盘，即可安装我们自定义的iso镜像，并实现开机自动激活操作系统。废话不多说，直接上教程。本次以vmware虚拟机为案例，实体机操作也大差不差。 流程 准备干净系统 加入需要的软件 实现开机自动激活Windows dism生成
         </div>
       </a>
 
@@ -553,7 +553,7 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-16 16:06" pubdate>
+            <time datetime="2025-04-16 17:23" pubdate>
               2025-04-16
             </time>
           </div>
@@ -569,7 +569,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E6%97%A5%E5%BF%97%E7%AF%87/" class="category-chain-item">日志篇</a>
+  <a href="/categories/Windows/" class="category-chain-item">Windows</a>
   
   
 
@@ -584,7 +584,7 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E6%97%A5%E5%BF%97%E7%AF%87/">#日志篇</a>
+              <a href="/tags/Windows/">#Windows</a>
             
           </div>
         
@@ -598,15 +598,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/04/16/WireGuard%E5%AE%9E%E7%8E%B0%E5%BC%82%E5%9C%B0%E7%BB%84%E7%BD%91/" target="_self">
-          WireGuard实现异地组网
+        <a href="/2025/04/16/k8s%E6%95%85%E9%9A%9C%E6%A1%88%E4%BE%8B/" target="_self">
+          k8s故障案例
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/WireGuard%E5%AE%9E%E7%8E%B0%E5%BC%82%E5%9C%B0%E7%BB%84%E7%BD%91/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/k8s%E6%95%85%E9%9A%9C%E6%A1%88%E4%BE%8B/" target="_self">
         <div>
-          WireGuard是一个易于配置、快速、安全的基于UDP协议的开源VPN软件。Wireguard具有自定义配置路由转发的能力，所以可以被用来在多个不同地域将设备所在的内网网络通过路由转发的方式串通起来，组建一张属于自己的大内网！有时候，我们想将本地计算机上提供的服务与小伙伴分享，但是我们既没有公网IP，又希望能够有足够的安全性，避免使其暴露在公网上。因此，我们基于Wireguard这一项最基本的
+          一、问题现象与背景某电商平台生产环境的Kubernetes集群在促销活动期间突发大规模Pod驱逐，具体表现如下：  Pod频繁重启：超过30%的Pod进入Evicted状态，核心服务（如订单支付、购物车）的Pod被反复驱逐。  节点资源耗尽：多个Worker节点的内存使用率超过95%，kubelet日志持续输出MemoryPressure警告。  监控告警：   Prometheus触发node_
         </div>
       </a>
 
@@ -614,7 +614,7 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-16 15:27" pubdate>
+            <time datetime="2025-04-16 17:20" pubdate>
               2025-04-16
             </time>
           </div>
@@ -630,7 +630,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E7%BD%91%E7%BB%9C%E7%AF%87/" class="category-chain-item">网络篇</a>
+  <a href="/categories/%E6%95%85%E9%9A%9C%E6%8C%87%E5%8D%97/" class="category-chain-item">故障指南</a>
   
   
 
@@ -645,7 +645,190 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E7%BD%91%E7%BB%9C%E7%AF%87/">#网络篇</a>
+              <a href="/tags/%E6%95%85%E9%9A%9C%E6%8C%87%E5%8D%97/">#故障指南</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/16/OOM%E6%8E%92%E6%9F%A5%E6%80%9D%E8%B7%AF/" target="_self">
+          OOM排查思路
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/OOM%E6%8E%92%E6%9F%A5%E6%80%9D%E8%B7%AF/" target="_self">
+        <div>
+          K8S + 容器的云原生生态，改变了服务的交付方式，自愈能力和自动扩缩等功能简直不要太好用。 有好的地方咱要夸，不好的地方咱也要说，真正的业务是部署于容器内部，而容器之外，又有一逻辑层 Pod 。 对于容器和 K8S 不怎么熟悉的人，一旦程序发生了问题，排查问题就是个头疼的问题。 问题描述事情的主角是 kubevirt 的一个开源项目叫 cdi，它的用途是在虚拟机启动之前将虚拟机的镜像导入到系统
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-16 17:17" pubdate>
+              2025-04-16
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%95%85%E9%9A%9C%E6%8C%87%E5%8D%97/" class="category-chain-item">故障指南</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E6%95%85%E9%9A%9C%E6%8C%87%E5%8D%97/">#故障指南</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/16/%E5%85%B3%E4%BA%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%8C%96%E7%9F%BF%E5%A4%84%E7%90%86%E6%80%9D%E8%B7%AF/" target="_self">
+          关于服务器挖矿处理思路
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/%E5%85%B3%E4%BA%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%8C%96%E7%9F%BF%E5%A4%84%E7%90%86%E6%80%9D%E8%B7%AF/" target="_self">
+        <div>
+          事件背景起因是有开发人员报障，程序在发布后无法正常运行，一直处于在重启的状态。 一开始我以为是程序本身的问题，但在查看服务日志后，并未发现程序有任何错误。 在查看监控系统时，发现该服务器节点CPU 利用率达到了100%，难怪程序已经无法运行。并且，还发现有这种情况的节点不止一个，整个环境中有好几台服务器都是CPU 100%的情况  一、查看进程使用Top命令查看进程 ，可以看到CPU的使用率已经跑
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-16 17:02" pubdate>
+              2025-04-16
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%95%85%E9%9A%9C%E6%8C%87%E5%8D%97/" class="category-chain-item">故障指南</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E6%95%85%E9%9A%9C%E6%8C%87%E5%8D%97/">#故障指南</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/16/%E6%8E%92%E6%9F%A5-Pod-%E7%8A%B6%E6%80%81%E5%BC%82%E5%B8%B8/" target="_self">
+          排查 Pod 状态异常
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/%E6%8E%92%E6%9F%A5-Pod-%E7%8A%B6%E6%80%81%E5%BC%82%E5%B8%B8/" target="_self">
+        <div>
+          Terminating Pending ContainerCreating-Waiting CrashLoopBackOff ImagePullBackOff  Terminating有时候删除 Pod 一直卡在 Terminating 状态，一直删不掉，可以从以下方面进行排查。 分析思路一、首先我们先了解下pod的删除流程：  APIServer 收到删除 Pod 的请求，Pod 被标记删除，
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-16 17:00" pubdate>
+              2025-04-16
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%95%85%E9%9A%9C%E6%8C%87%E5%8D%97/" class="category-chain-item">故障指南</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E6%95%85%E9%9A%9C%E6%8C%87%E5%8D%97/">#故障指南</a>
             
           </div>
         
@@ -657,7 +840,7 @@
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+      <a class="extend prev" rel="prev" href="/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/#board">3</a><a class="page-number" href="/page/4/#board">4</a><a class="extend next" rel="next" href="/page/3/#board"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
 

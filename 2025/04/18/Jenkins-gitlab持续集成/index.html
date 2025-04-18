@@ -1,0 +1,871 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/2.png">
+  <link rel="icon" href="/img/2.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="淡黄的cherry">
+  <meta name="keywords" content="">
+  <meta name="referrer" content="no-referrer">
+  
+    <meta name="description" content="之前我们已经部署了k8s和harbor仓库，本次来部署下jenkins和gitlab实现持续集成。 概念 持续集成是开发团队通过将代码的不同部分集成到共享存储库中，并频繁地进行构建和测试，以确保代码的一致性和稳定性。 流程 在现在的开发模式中，一般的项目，协同开发是离不开的，这就涉及到多个开发人员编写处理自己负责的功能模块或者某些开发人员共同负责一个模块。于是，通过版本控制系统可以将各个开发人员">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Jenkins+gitlab持续集成">
+<meta property="og:url" content="http://example.com/2025/04/18/Jenkins-gitlab%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/index.html">
+<meta property="og:site_name" content="cherry">
+<meta property="og:description" content="之前我们已经部署了k8s和harbor仓库，本次来部署下jenkins和gitlab实现持续集成。 概念 持续集成是开发团队通过将代码的不同部分集成到共享存储库中，并频繁地进行构建和测试，以确保代码的一致性和稳定性。 流程 在现在的开发模式中，一般的项目，协同开发是离不开的，这就涉及到多个开发人员编写处理自己负责的功能模块或者某些开发人员共同负责一个模块。于是，通过版本控制系统可以将各个开发人员">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/e1515ec05a604141a51fb41866f3b4f8.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/fb5658f33a674aaf8f16a7198b9da4e5.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/105460e20071422b84d3861c09145a54.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/5c919d64bb60497db248332c7ba4d376.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/b6d8f708686a4daf973f86a9fb8c4fcc.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/2e48d1b82ed74ec0971cfbdf1214a888.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/9ae3dd35c62e4146a54b59671f70bf2d.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/a7d21a5248714edf8437ae6646f79ff3.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/ea6267f5b46a4537a65173d42916acad.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/2c004cf24a564d328fea29af1008bd8a.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/aaf8e8f036024678a602c833150fc730.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/9d9589fef0c24fde925ab1874fbd4a99.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/9fda0fb6a0e74337b433cc67a415c1ef.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/81ea81153b4a47d985cb4f2d7c31835a.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/e5a3ce30996d414287f7cf26d27d9e9c.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/20fd10f4b6214e02937eeb464ae75025.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/1d5f28d411084e1e9bd09a9e30a5c7ab.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/d151e8f5f16c4650bd5a2135dfc61e60.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/3bb3f56c2bbd4ab0a4d33b70589d33a6.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/9cd693ded1bf4da29b08b1ddab163628.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/6caece5f65ef4edf9405091af52edf45.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/860ce7b0d00f4b28b93dc091057d0fde.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/52f75e68a66f45c98744132684c782c7.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/d1ffaa4591104bc0b6c840b5420990ce.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/58cc8d038daa445dbc23612a4e0bc49b.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/276546fd9ab44bb58382021626f3b884.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/962a11f4e4c1450d8cee1548aa69720a.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/81321be1610f45fd921b4341abf05b57.png">
+<meta property="article:published_time" content="2025-04-18T02:51:51.000Z">
+<meta property="article:modified_time" content="2025-04-18T03:00:52.647Z">
+<meta property="article:author" content="淡黄的cherry">
+<meta property="article:tag" content="CICD">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/e1515ec05a604141a51fb41866f3b4f8.png">
+  
+  
+  
+  <title>Jenkins+gitlab持续集成 - cherry</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/macpanel.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong class="navbar-title">cherryの技术文档</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Jenkins+gitlab持续集成"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-18 10:51" pubdate>
+          2025年4月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Jenkins+gitlab持续集成</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p> 之前我们已经部署了k8s和harbor仓库，本次来部署下jenkins和gitlab实现持续集成。</p>
+<p><strong>概念</strong></p>
+<p>持续集成是开发团队通过将代码的不同部分集成到共享存储库中，并频繁地进行构建和测试，以确保代码的一致性和稳定性。</p>
+<p><strong>流程</strong><br> 在现在的开发模式中，一般的项目，协同开发是离不开的，这就涉及到多个开发人员编写处理自己负责的功能模块或者某些开发人员共同负责一个模块。于是，通过版本控制系统可以将各个开发人员的代码集成在该共享存储库里，在存储库里，每个开发人员根据需求的不同来创建对应的分支，在完成需求后，每个人都需要提交合并将开发分支代码集成在一起，这就需要解决代码冲突，并且如何除了code review之外如何确保这些更改对应用没有产生影响，一旦提交请求合并到主分支，自动化构建工具就会根据流程自动编译构建安装应用，并执行单元测试框架的自动化测试来校验提交的修改。</p>
+<h2 id="机器规划如下"><a href="#机器规划如下" class="headerlink" title="机器规划如下"></a>机器规划如下</h2><table>
+<thead>
+<tr>
+<th>服务器名称</th>
+<th>IP地址</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>jenkins211</td>
+<td>10.0.0.211</td>
+<td>2核，4GiB，系统盘 20GiB</td>
+</tr>
+<tr>
+<td>gitlab212</td>
+<td>10.0.0.212</td>
+<td>4核，4GiB，系统盘 20GiB</td>
+</tr>
+</tbody></table>
+<h2 id="一、部署jenkins"><a href="#一、部署jenkins" class="headerlink" title="一、部署jenkins"></a>一、部署jenkins</h2><p><strong>1.下载jenkins</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">https://mirrors.jenkins-ci.org/debian/<br></code></pre></td></tr></table></figure>
+
+<p><strong>2.准备jenkins部署环境</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs bash">1 部署Jenkins的秘钥<br>[root@jenkins211 ~]# <span class="hljs-built_in">sudo</span> wget -O /usr/share/keyrings/jenkins-keyring.asc \<br>    https://pkg.jenkins.io/debian/jenkins.io-2023.key<br><br>2 添加Jenkins的存储库<br>[root@jenkins211 ~]# <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]&quot;</span> \<br>    https://pkg.jenkins.io/debian binary/ | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> \<br>    /etc/apt/sources.list.d/jenkins.list &gt; /dev/null<br><br>3 安装JRE环境(在线安装很慢，一般提前下载好jdk)<br>[root@jenkins211 ~]# <span class="hljs-built_in">sudo</span> apt-get update<br>  <span class="hljs-built_in">sudo</span> apt-get install fontconfig openjdk-17-jre<br>  <span class="hljs-built_in">sudo</span> apt-get install jenkins  <br><br>4 创建jdk安装目录，解压到指定目录<br>[root@jenkins211 ~]# <span class="hljs-built_in">mkdir</span> -pv /softwares<br>[root@jenkins211 ~]# tar xf jdk-17_linux-x64_bin.tar.gz -C /softwares/<br><br><br>5 配置jdk环境变量<br>[root@jenkins211 ~]# vim .bashrc<br>...<br><span class="hljs-built_in">export</span> JAVA_HOME=/softwares/jdk-17.0.8<br><span class="hljs-built_in">export</span> PATH=<span class="hljs-variable">$PATH</span>:<span class="hljs-variable">$JAVA_HOME</span>/bin<br><br>[root@jenkins211 ~]# <span class="hljs-built_in">source</span> .bashrc <br><br>6 验证jdk是否生效<br>[root@jenkins211 ~]# java --version<br>openjdk 17.0.13 2024-10-15<br>OpenJDK Runtime Environment (build 17.0.13+11-Ubuntu-2ubuntu122.04)<br>OpenJDK 64-Bit Server VM (build 17.0.13+11-Ubuntu-2ubuntu122.04, mixed mode, sharing)<br></code></pre></td></tr></table></figure>
+
+<p><strong>3.部署jenkins</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash">安装jenkins<br>[root@jenkins211 ~]# dpkg -i jenkins_2.489_all.deb <br><span class="hljs-comment"># apt-get install jenkins #这种在线方式安装较慢，不建议。</span><br><br>修改jenkins的启动脚本并重启服务<br>[root@jenkins211 ~]# vim /lib/systemd/system/jenkins.service<br>......<br>User=root<br>Group=root<br><br>...<br>Environment=<span class="hljs-string">&quot;JENKINS_HOME=/var/lib/jenkins&quot;</span><br><span class="hljs-comment"># 找到上面一行后添加如下一行</span><br>Environment=<span class="hljs-string">&quot;JAVA_HOME=/oldboyedu/softwares/jdk-17.0.8&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>4.访问jenkins地址</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">http://10.0.0.211:8080/login?from=%2F<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/e1515ec05a604141a51fb41866f3b4f8.png" srcset="/img/loading.gif" lazyload alt="img"><br><strong>5.查看密码</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@jenkins211 ~]# <span class="hljs-built_in">cat</span> /var/lib/jenkins/secrets/initialAdminPassword<br>88259fc092c34ded983b6917872****d<br></code></pre></td></tr></table></figure>
+
+<p><strong>6.安装jenkins插件</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/fb5658f33a674aaf8f16a7198b9da4e5.png" srcset="/img/loading.gif" lazyload alt="img"><strong>7.创建用户</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/105460e20071422b84d3861c09145a54.png" srcset="/img/loading.gif" lazyload alt="img"><strong>好啦，就这样jenkins就简简单单部署完成了</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/5c919d64bb60497db248332c7ba4d376.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>8.修改时区</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs swift">[root<span class="hljs-meta">@jenkins211</span> <span class="hljs-operator">~</span>]# ln <span class="hljs-operator">-</span>svf <span class="hljs-regexp">/usr/</span>share<span class="hljs-regexp">/zoneinfo/</span><span class="hljs-type">Asia</span><span class="hljs-regexp">/Shanghai /</span>etc<span class="hljs-operator">/</span>localtime<br>&#x27;<span class="hljs-regexp">/etc/</span>localtime&#x27; -&gt; &#x27;<span class="hljs-regexp">/usr/</span>share<span class="hljs-regexp">/zoneinfo/</span><span class="hljs-type">Asia</span><span class="hljs-operator">/</span><span class="hljs-type">Shanghai</span>&#x27;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/b6d8f708686a4daf973f86a9fb8c4fcc.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>9.修改jenkins软件源</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs swift">[root<span class="hljs-meta">@jenkins211</span> <span class="hljs-operator">~</span>]# sed <span class="hljs-operator">-</span>i.bak &#x27;s#updates.jenkins.io<span class="hljs-regexp">/download#mirror.tuna.tsinghua.edu.cn/</span>jenkins#g&#x27; <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/jenkins/</span>updates<span class="hljs-operator">/</span><span class="hljs-keyword">default</span>.json<br></code></pre></td></tr></table></figure>
+
+<p>10.修改搜索引擎</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs dart">[root<span class="hljs-meta">@jenkins</span>211 ~]# sed -i <span class="hljs-string">&#x27;s#www.google.com#www.baidu.com#g&#x27;</span> /<span class="hljs-keyword">var</span>/lib/jenkins/updates/<span class="hljs-keyword">default</span>.json<br></code></pre></td></tr></table></figure>
+
+<p>11.替换jenkins国内下载地址</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/2e48d1b82ed74ec0971cfbdf1214a888.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p> 拉到最下面替换url</p>
+<blockquote>
+<p>将升级站点URL替换成国内镜像地址<br> <a target="_blank" rel="noopener" href="https://mirror.tuna.tsinghua.edu.cn/jenkins/updates/update-center.json">https://mirror.tuna.tsinghua.edu.cn/jenkins/updates/update-center.json</a></p>
+</blockquote>
+<h2 id=""><a href="#" class="headerlink" title=""></a><img src="https://gitee.com/ljh00928/csdn/raw/master/img/9ae3dd35c62e4146a54b59671f70bf2d.png" srcset="/img/loading.gif" lazyload alt="img"></h2><p>12.重新登录jenkins</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://10.0.0.211:8080/restart">http://10.0.0.211:8080/restart</a></p>
+</blockquote>
+<h2 id="二、部署gitlab"><a href="#二、部署gitlab" class="headerlink" title="二、部署gitlab"></a>二、部署gitlab</h2><p>参考地址：<a target="_blank" rel="noopener" href="https://about.gitlab.com/install/#ubuntu">https://about.gitlab.com/install/#ubuntu</a></p>
+<ol>
+<li>安装并配置必要的依赖项</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">apt-get update<br>apt-get install -y curl openssh-server ca-certificates tzdata perl<br></code></pre></td></tr></table></figure>
+
+<p>2.安装 Postfix</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">apt-get install -y postfix<br></code></pre></td></tr></table></figure>
+
+<p>3.添加 GitLab 包仓库并安装包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh | <span class="hljs-built_in">sudo</span> bash<br></code></pre></td></tr></table></figure>
+
+<p>4.安装 GitLab 包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#url替换成自己本机的ip地址</span><br>EXTERNAL_URL=<span class="hljs-string">&quot;http://10.0.0.212&quot;</span> apt-get install gitlab-ee<br><br><span class="hljs-comment">#也可以选择离线部署</span><br>https://packages.gitlab.com/gitlab/gitlab-ce<br></code></pre></td></tr></table></figure>
+
+<p>5.查看密码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@gitlab212 ~]# <span class="hljs-built_in">cat</span> /etc/gitlab/initial_root_password<br>....<br>Password: 8Et747zZeK0xKnx4gJ03HP+5MQ00yv4v3rzjy1a***=<br>....<br></code></pre></td></tr></table></figure>
+
+<p>6.登录</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">账号：root<br>密码：查看生成的密码<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/a7d21a5248714edf8437ae6646f79ff3.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>7.设置语言</p>
+<p>点击偏好设置</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/ea6267f5b46a4537a65173d42916acad.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>选择中文–&gt;保存</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/2c004cf24a564d328fea29af1008bd8a.png" srcset="/img/loading.gif" lazyload alt="img">8.开启本地网络请求</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/aaf8e8f036024678a602c833150fc730.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h2 id="三、gitlab集成jenkins"><a href="#三、gitlab集成jenkins" class="headerlink" title="三、gitlab集成jenkins"></a>三、gitlab集成jenkins</h2><p>1.创建群组</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/9d9589fef0c24fde925ab1874fbd4a99.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>2.新建项目</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/9fda0fb6a0e74337b433cc67a415c1ef.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/81ea81153b4a47d985cb4f2d7c31835a.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>3.添加ssh密钥</p>
+<p>服务器和代码仓库连接方式有两种</p>
+<p>第一种: 基于用户名和密码的方式连接</p>
+<p>第二种: 基于SSH免秘钥方式(和命令行的SSH免秘钥相同)</p>
+<p>我们使用基于免秘钥方式: 方便+安全性高</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs gherkin">[root<span class="hljs-meta">@gitlab212</span> ~]<span class="hljs-comment"># ssh-keygen     #生成密钥对</span><br>Generating public/private ed25519 key pair.<br>Enter file in which to save the key (/root/.ssh/id_ed25519): <br>Enter passphrase (empty for no passphrase): <br>Enter same passphrase again: <br>Your identification has been saved in /root/.ssh/id_ed25519<br>Your public key has been saved in /root/.ssh/id_ed25519.pub<br>The key fingerprint is:<br>SHA256:GMd0qYCfisI7YgnL9gaTOvhSg9VWYVOtJ/ZmClhYCPc root<span class="hljs-meta">@gitlab212</span><br>The key&#x27;s randomart image is:<br>+--[ED25519 256]--+<br>|<span class="hljs-string">  ...o+oo...     </span>|<br>|<span class="hljs-string">   .oo++ .o      </span>|<br>|<span class="hljs-string">   . =Eooo       </span>|<br>|<span class="hljs-string">  . + ++= .      </span>|<br>|<span class="hljs-string">.o.o +..S+       </span>|<br>|<span class="hljs-string">+=+ o .   +      </span>|<br>|<span class="hljs-string">=+=.   . +       </span>|<br>|<span class="hljs-string">BB .    .        </span>|<br>|<span class="hljs-string">++=.             </span>|<br>+----[SHA256]-----+<br>[root<span class="hljs-meta">@gitlab212</span> ~]<span class="hljs-comment"># </span><br>[root<span class="hljs-meta">@gitlab212</span> ~]<span class="hljs-comment"># ll .ssh/</span><br>total 16<br>drwx------ 2 root root 4096 Dec 17 07:57 ./<br>drwx------ 4 root root 4096 Dec 15 12:01 ../<br>-rw------- 1 root root    0 Jul 23 16:40 authorized_keys<br>-rw------- 1 root root  411 Dec 17 07:57 id_ed25519        <span class="hljs-comment">#私钥</span><br>-rw-r--r-- 1 root root   96 Dec 17 07:57 id_ed25519.pub    <span class="hljs-comment">#公钥</span><br>[root<span class="hljs-meta">@gitlab212</span> ~]<span class="hljs-comment"># cat .ssh/id_rsa.pub </span><br>cat: .ssh/id_rsa.pub: No such file or directory<br>[root<span class="hljs-meta">@gitlab212</span> ~]<span class="hljs-comment"># cat .ssh/id_ed25519.pub</span><br>ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILkNNA0/prl380e574O6+cfOSOAbpeJl+zhEdS5e58 root<span class="hljs-meta">@gitlab212</span><br></code></pre></td></tr></table></figure>
+
+<p> 4.将公钥贴近gitlab</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/e5a3ce30996d414287f7cf26d27d9e9c.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>添加公钥</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/20fd10f4b6214e02937eeb464ae75025.png" srcset="/img/loading.gif" lazyload alt="img">4.推送代码</p>
+<p>配置邮箱</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus">git config <span class="hljs-attr">--local</span> user<span class="hljs-selector-class">.name</span> <span class="hljs-string">&quot;liangjh&quot;</span><br>git config <span class="hljs-attr">--local</span> user<span class="hljs-selector-class">.email</span> <span class="hljs-string">&quot;3101306637@qq.com&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>创建仓库</p>
+<figure class="highlight tap"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs tap"><span class="hljs-comment">#上传代码到服务器</span><br>[root@gitlab212 project]<span class="hljs-comment"># pwd</span><br>/root/project<br>[root@gitlab212 project]<span class="hljs-comment"># ll</span><br>total 228<br>drwxr-xr-x<span class="hljs-number"> 6 </span>root root <span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 17 </span>08:09 ./<br>drwx------<span class="hljs-number"> 5 </span>root root <span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 17 </span>08:06 ../<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 16458 </span>Jun<span class="hljs-number"> 13 </span><span class="hljs-number"> 2019 </span>about.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 20149 </span>Jun<span class="hljs-number"> 13 </span><span class="hljs-number"> 2019 </span>album.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 19662 </span>Jun<span class="hljs-number"> 13 </span><span class="hljs-number"> 2019 </span>article_detail.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 18767 </span>Jun<span class="hljs-number"> 13 </span><span class="hljs-number"> 2019 </span>article.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 18913 </span>Jun<span class="hljs-number"> 13 </span><span class="hljs-number"> 2019 </span>comment.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 16465 </span>Jun<span class="hljs-number"> 13 </span><span class="hljs-number"> 2019 </span>contact.html<br>drwxr-xr-x<span class="hljs-number"> 2 </span>root root <span class="hljs-number"> 4096 </span>Sep<span class="hljs-number"> 19 </span><span class="hljs-number"> 2022 </span>css/<br>drwxr-xr-x<span class="hljs-number"> 7 </span>root root <span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 17 </span>08:07 .git/<br>drwxr-xr-x<span class="hljs-number"> 5 </span>root root <span class="hljs-number"> 4096 </span>Sep<span class="hljs-number"> 19 </span><span class="hljs-number"> 2022 </span>images/<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 29627 </span>Jun<span class="hljs-number"> 29 </span><span class="hljs-number"> 2019 </span>index.html<br>drwxr-xr-x<span class="hljs-number"> 2 </span>root root <span class="hljs-number"> 4096 </span>Sep<span class="hljs-number"> 19 </span><span class="hljs-number"> 2022 </span>js/<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 24893 </span>Jun<span class="hljs-number"> 13 </span><span class="hljs-number"> 2019 </span>product_detail.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 20672 </span>Jun<span class="hljs-number"> 13 </span><span class="hljs-number"> 2019 </span>product.html<br><br><br>git clone git@10.0.0.212:ops/project.git<br>cd project<br>git switch --create main<br><br><span class="hljs-comment">#提交全部代码到缓存区</span><br>[root@gitlab212 project]<span class="hljs-comment"># git add .    </span><br><br><span class="hljs-comment">#提交到远程仓库</span><br>[root@gitlab212 project]<span class="hljs-comment"># git commit -m &quot;第一次提交&quot;</span><br><br><span class="hljs-comment">#查看分支</span><br>[root@gitlab212 project]<span class="hljs-comment"># git branch</span><br><br><span class="hljs-comment">#推送到master分支</span><br>[root@gitlab212 project]<span class="hljs-comment"># git push -u origin master</span><br></code></pre></td></tr></table></figure>
+
+<p>5.gitlab查看</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/1d5f28d411084e1e9bd09a9e30a5c7ab.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h2 id="四、配置jenkins和gitlab免密"><a href="#四、配置jenkins和gitlab免密" class="headerlink" title="四、配置jenkins和gitlab免密"></a>四、配置jenkins和gitlab免密</h2><p>1.jenkins生成密钥对</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs gherkin">[root<span class="hljs-meta">@jenkins211</span> ~]<span class="hljs-comment"># ssh-keygen</span><br>Generating public/private rsa key pair.<br>Enter file in which to save the key (/root/.ssh/id_rsa): <br>Enter passphrase (empty for no passphrase): <br>Enter same passphrase again: <br>Your identification has been saved in /root/.ssh/id_rsa<br>Your public key has been saved in /root/.ssh/id_rsa.pub<br>The key fingerprint is:<br>SHA256:8f0e/2XSZCdAGULp+LEkvVjeFo7YVJWv7HDFQDzfi1I root<span class="hljs-meta">@jenkins211</span><br>The key&#x27;s randomart image is:<br>+---[RSA 3072]----+<br>|<span class="hljs-string">         .o.o*o. </span>|<br>|<span class="hljs-string">          .oo =  </span>|<br>|<span class="hljs-string">        .+ ..  *.</span>|<br>|<span class="hljs-string">        ooB..E  *</span>|<br>|<span class="hljs-string">        S@.Boooo=</span>|<br>|<span class="hljs-string">        o B.=o+*.</span>|<br>|<span class="hljs-string">           ..++ +</span>|<br>|<span class="hljs-string">             ..=.</span>|<br>|<span class="hljs-string">              . +</span>|<br>+----[SHA256]-----+<br>[root<span class="hljs-meta">@jenkins211</span> ~]<span class="hljs-comment"># </span><br>[root<span class="hljs-meta">@jenkins211</span> ~]<span class="hljs-comment"># cat .ssh/id_rsa.pub </span><br>ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCrTMTf0oqtW7GktgZBdhqkjCBp2xGCcGeEo8ZcEKaN352TDMGKRI5O+0gAwUBj9HMAkPASJsejtTQIrT5jkBuW/8L5RXPDqCCyuzz1nkW/rPiyVvuAvvkQxFMBxL4w/AoDAhcsxpV73DCyYTrjQ8Tj7PfSViEUKZFpPbtroOZeCgCVa/mNPj7hGI2xUapKd0rdiGpXlDMPlD1uN9TET1WTj157QbYbgtsA6y+K2hjG97HHta0miovC4vqbaKQuohbYThbkwE5v6Ndjg8WSYjXEO6SDgemR6/c/JIyMPv1rNUitzl6dg4jykJ2pCTsemvFL7Vdjypbn9l0bPK8cq+mz0W8ZKLd2Ijqshj67SFWjFxJs0/yabg3jdMTdnYxRYdiG2vaMlAmtgGbXAUGXMqCzXNftmSpyqlSxGhfKLUC76LCqc4nBhqt2reN3L5yd/rzVZENdpok8cdV/dZag8ibzlgeqOL60ONThYTPZTACyw+U2K2HhqLmoCVDpYxU= root<span class="hljs-meta">@jenkins211</span><br></code></pre></td></tr></table></figure>
+
+<p> 2.<strong>将公钥加入到gitlab</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/d151e8f5f16c4650bd5a2135dfc61e60.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>3.拉取测试</p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs autoit"><span class="hljs-meta"># 随便拉一个位置测试就行</span><br>[root<span class="hljs-symbol">@jenkins211</span> ~]<span class="hljs-meta"># git clone git@10.0.0.212:ops/project.git</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="五、-jenkins推送代码到gitlab"><a href="#五、-jenkins推送代码到gitlab" class="headerlink" title="五、 jenkins推送代码到gitlab"></a>五、 jenkins推送代码到gitlab</h2><p>1.jenkins创建项目</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/3bb3f56c2bbd4ab0a4d33b70589d33a6.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>2.填写git地址<img src="https://gitee.com/ljh00928/csdn/raw/master/img/9cd693ded1bf4da29b08b1ddab163628.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p> 3.jenkins构建</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/6caece5f65ef4edf9405091af52edf45.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<blockquote>
+<p> 构建完成之后，代码会拉取到jenkins工作目录中，在日志中查看工作目录的位置</p>
+</blockquote>
+<p> <img src="https://gitee.com/ljh00928/csdn/raw/master/img/860ce7b0d00f4b28b93dc091057d0fde.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p> 服务器查看，代码已经成功拉取到jenkins工作目录。</p>
+<figure class="highlight tap"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs tap">[root@jenkins211 test]<span class="hljs-comment"># pwd</span><br>/var/lib/jenkins/workspace/test<br>[root@jenkins211 test]<span class="hljs-comment"># ll</span><br>total 228<br>drwxr-xr-x<span class="hljs-number"> 6 </span>root root <span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 17 </span>17:22 ./<br>drwxr-xr-x<span class="hljs-number"> 3 </span>root root <span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 17 </span>17:22 ../<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 16458 </span>Dec<span class="hljs-number"> 17 </span>17:22 about.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 20149 </span>Dec<span class="hljs-number"> 17 </span>17:22 album.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 19662 </span>Dec<span class="hljs-number"> 17 </span>17:22 article_detail.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 18767 </span>Dec<span class="hljs-number"> 17 </span>17:22 article.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 18913 </span>Dec<span class="hljs-number"> 17 </span>17:22 comment.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 16465 </span>Dec<span class="hljs-number"> 17 </span>17:22 contact.html<br>drwxr-xr-x<span class="hljs-number"> 2 </span>root root <span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 17 </span>17:22 css/<br>drwxr-xr-x<span class="hljs-number"> 8 </span>root root <span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 17 </span>17:22 .git/<br>drwxr-xr-x<span class="hljs-number"> 5 </span>root root <span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 17 </span>17:22 images/<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 29627 </span>Dec<span class="hljs-number"> 17 </span>17:22 index.html<br>drwxr-xr-x<span class="hljs-number"> 2 </span>root root <span class="hljs-number"> 4096 </span>Dec<span class="hljs-number"> 17 </span>17:22 js/<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 24893 </span>Dec<span class="hljs-number"> 17 </span>17:22 product_detail.html<br>-rw-r--r--<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 20672 </span>Dec<span class="hljs-number"> 17 </span>17:22 product.html<br></code></pre></td></tr></table></figure>
+
+<p>4.配置webhook</p>
+<p>jenkins需要安装gitlab插件</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/52f75e68a66f45c98744132684c782c7.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p> 勾选插件</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/d1ffaa4591104bc0b6c840b5420990ce.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p> jenkins生成令牌</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/58cc8d038daa445dbc23612a4e0bc49b.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p> gitlab添加令牌，填写jenkins url</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/276546fd9ab44bb58382021626f3b884.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>gitlab测试钩子状态</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/962a11f4e4c1450d8cee1548aa69720a.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h2 id="六、测试gitlab和jenkins持续集成"><a href="#六、测试gitlab和jenkins持续集成" class="headerlink" title="六、测试gitlab和jenkins持续集成"></a>六、测试gitlab和jenkins持续集成</h2><p>gitlab修改代码提交，这里我们直接加个p标签测试</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs xml">[root@gitlab212 project]# vim about.html<br><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">html</span>&gt;</span><br><br><span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">&quot;http://www.w3.org/1999/xhtml&quot;</span>&gt;</span><br><br><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span><br><br>        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span> 第一次提交 <span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">http-equiv</span>=<span class="hljs-string">&quot;Content-Type&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;text/html; charset=utf-8&quot;</span> /&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">http-equiv</span>=<span class="hljs-string">&quot;X-UA-Compatible&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;IE=edge&quot;</span> /&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;viewport&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;width=device-width, initial-scale=1&quot;</span> /&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;applicable-device&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;pc,mobile&quot;</span> /&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>关于我们<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>提交代码到gitlab</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs sql">git <span class="hljs-keyword">add</span> .<br><br>git <span class="hljs-keyword">commit</span> <span class="hljs-operator">-</span>m ＂第一次提交&quot;<br><br>git push origin master<br></code></pre></td></tr></table></figure>
+
+<p>jenkins观察是否自动拉取，这时候jenkins检测到gitlab分支有变动，自动拉取代码到了jenkins工作目录中了~</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/81321be1610f45fd921b4341abf05b57.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs xml">[root@jenkins211 test]# cat about.html | head -10<br>?<span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">html</span>&gt;</span><br><br><span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">&quot;http://www.w3.org/1999/xhtml&quot;</span>&gt;</span><br><br><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span><br><br>	<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span> 第一次提交 <span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">http-equiv</span>=<span class="hljs-string">&quot;Content-Type&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;text/html; charset=utf-8&quot;</span> /&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">http-equiv</span>=<span class="hljs-string">&quot;X-UA-Compatible&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;IE=edge&quot;</span> /&gt;</span><br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/CICD/" class="category-chain-item">CICD</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/CICD/" class="print-no-link">#CICD</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Jenkins+gitlab持续集成</div>
+      <div>http://example.com/2025/04/18/Jenkins-gitlab持续集成/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>淡黄的cherry</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/18/jenkins-gitlab-docker-harbor-k8s%E7%BB%88%E7%BB%93%E7%AF%87/" title="jenkins+gitlab+docker+harbor+k8s终结篇">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">jenkins+gitlab+docker+harbor+k8s终结篇</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/18/harbor%E9%83%A8%E7%BD%B2/" title="harbor部署">
+                        <span class="hidden-mobile">harbor部署</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  <div>
+    <span id="timeDate">正在载入天数...</span>
+    <span id="times">载入时分秒...</span>
+    <script>
+    var now = new Date();
+    function createtime(){
+        var grt= new Date("08/17/2020 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24;
+        dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum);
+        hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){
+            hnum = "0" + hnum;
+        }
+        minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes);
+        if(String(mnum).length ==1 ){
+                  mnum = "0" + mnum;
+        }
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds);
+        if(String(snum).length ==1 ){
+                  snum = "0" + snum;
+        }
+        document.getElementById("timeDate").innerHTML = "🚀已持续航行&nbsp"+dnum+"&nbsp天";  
+        document.getElementById("times").innerHTML = hnum + "&nbsp时&nbsp" + mnum + "&nbsp分&nbsp" + snum + "&nbsp秒";
+    }
+    setInterval("createtime()",250);
+    </script>
+  </div>
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom.js"></script>
+<script src="/js/snow.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

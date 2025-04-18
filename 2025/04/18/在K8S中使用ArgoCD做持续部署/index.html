@@ -1,0 +1,839 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/2.png">
+  <link rel="icon" href="/img/2.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="淡黄的cherry">
+  <meta name="keywords" content="">
+  <meta name="referrer" content="no-referrer">
+  
+    <meta name="description" content="一、了解argocdArgoCD是一个基于Kubernetes的GitOps持续交付工具，应用的部署和更新都可以在Git仓库上同步实现，并自带一个可视化界面。本文介绍如何使用Git+Argocd方式来实现在k8s中部署和更新应用服务。关于ci这一块这里不多介绍。主要讲解argocd如何实现cd持续部署。在开始前，需要部署一套k8s集群，可参考本文连接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;m">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在K8S中使用ArgoCD做持续部署">
+<meta property="og:url" content="http://example.com/2025/04/18/%E5%9C%A8K8S%E4%B8%AD%E4%BD%BF%E7%94%A8ArgoCD%E5%81%9A%E6%8C%81%E7%BB%AD%E9%83%A8%E7%BD%B2/index.html">
+<meta property="og:site_name" content="cherry">
+<meta property="og:description" content="一、了解argocdArgoCD是一个基于Kubernetes的GitOps持续交付工具，应用的部署和更新都可以在Git仓库上同步实现，并自带一个可视化界面。本文介绍如何使用Git+Argocd方式来实现在k8s中部署和更新应用服务。关于ci这一块这里不多介绍。主要讲解argocd如何实现cd持续部署。在开始前，需要部署一套k8s集群，可参考本文连接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;m">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/b819ac46c7674fa5b52da3668eac0397.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/a659614bebb341bdbaf3996b043b77a0.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/fb09126f952b41dfa43415c39f4e38f5.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/21dfe8d196044229ac7c1e1b7ef9a211.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/17d2ef035c4047f8870a530c6ae199fe.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/4b752038d5c24eba9feb7de5d3e08a98.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/fa2f42bc21b64d08bfb9473796e45113.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/3e7e3fcd71bd4a4fab48065455fd8230.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/537b8072b9ee45b58fe05f53d88c8cfc.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/d4a267c8db484a7589b621c7271df127.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/0857ff9730414e6691e334755b9af0b3.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/fc3ce3c2686443b297732806089192d7.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/332cdfbf3fd5492e951a22bbfc673e86.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/0278af6638ad4285b655e435b59bb389.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/7fd8c69b053c470a8f0d26f6023913fc.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/ea8d0b2632244d7ba6a20dde06e58dad.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/b52f3c52db6040829d9a054f990bf1dc.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/f27b292e1868437dab42657ce0cef295.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/d86d9c05e6cf4201a764845d0f109750.png">
+<meta property="article:published_time" content="2025-04-18T03:09:08.000Z">
+<meta property="article:modified_time" content="2025-04-18T03:12:10.496Z">
+<meta property="article:author" content="淡黄的cherry">
+<meta property="article:tag" content="CICD">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/b819ac46c7674fa5b52da3668eac0397.png">
+  
+  
+  
+  <title>在K8S中使用ArgoCD做持续部署 - cherry</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/macpanel.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong class="navbar-title">cherryの技术文档</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="在K8S中使用ArgoCD做持续部署"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-18 11:09" pubdate>
+          2025年4月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          23 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">在K8S中使用ArgoCD做持续部署</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="一、了解argocd"><a href="#一、了解argocd" class="headerlink" title="一、了解argocd"></a>一、了解argocd</h2><p>ArgoCD是一个基于Kubernetes的GitOps持续交付工具，应用的部署和更新都可以在Git仓库上同步实现，并自带一个可视化界面。本文介绍如何使用Git+Argocd方式来实现在k8s中部署和更新应用服务。关于ci这一块这里不多介绍。主要讲解argocd如何实现cd持续部署。在开始前，需要部署一套k8s集群，可参考本文连接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_69326428/article/details/144375315?spm=1011.2415.3001.5331">https://blog.csdn.net/m0_69326428/article/details/144375315?spm=1011.2415.3001.5331</a></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/b819ac46c7674fa5b52da3668eac0397.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<h3 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h3><p>ArgoCD 的核心理念是 GitOps，即以 Git 仓库作为单一的真理源，通过自动化的方式将仓库中的应用配置同步到 Kubernetes 集群中。</p>
+<ol>
+<li><strong>定义应用</strong>: 用户在 Git 仓库中定义应用的 Kubernetes 资源清单，并将这些清单文件提交到 Git 仓库。</li>
+<li><strong>创建 ArgoCD Application</strong>: 在 ArgoCD 中创建一个 <code>Application</code> 资源，该资源描述了应用在 Git 仓库中的位置，以及在 Kubernetes 集群中部署的位置。</li>
+<li><strong>同步状态监控</strong>: ArgoCD Controller 持续监控 Git 仓库中的配置，并与当前集群状态进行对比。每次检测到 Git 仓库中的应用配置发生变化时，Controller 会自动更新集群中的资源，保持与 Git 仓库的一致性。</li>
+<li><strong>自动同步与手动同步</strong>: ArgoCD 支持自动同步和手动同步。自动同步模式下，一旦检测到 Git 仓库有变化，ArgoCD 会自动更新 Kubernetes 集群中的资源。而在手动同步模式下，用户需要手动触发同步操作。</li>
+<li><strong>回滚功能</strong>: 如果应用更新导致问题，ArgoCD 提供了回滚功能，用户可以轻松恢复到先前的状态</li>
+</ol>
+<p>CD 流水线有两种模式：Push 和 Pull</p>
+<h3 id="Push-模式"><a href="#Push-模式" class="headerlink" title="Push 模式"></a>Push 模式</h3><p>目前大多数 CI&#x2F;CD 工具都使用基于 Push 的部署模式，例如 Jenkins。这种模式一般都会在 CI 流水线运行完成后执行一个命令（比如 kubectl）将应用部署到目标环境中。</p>
+<p>这种 CD 模式的缺陷很明显：</p>
+<p>需要在环境安装配置额外管理工具（比如 kubectl）；<br>需要 Kubernetes 对其进行授权；<br>需要云平台授权；<br>无法感知部署状态。也就无法感知期望状态与实际状态的偏差，需要借助额外的方案来保障一致性。<br>Kubernetes 集群或者云平台对 CI 系统的授权凭证在集群或云平台的信任域之外，不受集群或云平台的安全策略保护，因此 CI 系统很容易被当成非法攻击的载体。</p>
+<h3 id="Pull-模式"><a href="#Pull-模式" class="headerlink" title="Pull 模式"></a>Pull 模式</h3><p>Pull 模式会在目标环境中安装一个 Agent，例如在 Kubernetes 集群中就靠 Operator 来充当这个 Agent。Operator 会周期性地监控目标环境的实际状态，并与 Git 仓库中的期望状态进行比较，如果实际状态不符合期望状态，Operator 就会更新基础设施的实际状态以匹配期望状态。</p>
+<p>只有 Git 的变更可以作为期望状态的唯一来源，除此之外，任何人都不可以对集群进行任何更改，即使你修改了，也会被 Operator 还原为期望状态，这也就是传说中的不可变基础设施。</p>
+<p>目前基于 Pull 模式的 CD 工具有 Argo CD，Flux CD 以及 ks-devops。</p>
+<h2 id="二、部署argocd"><a href="#二、部署argocd" class="headerlink" title="二、部署argocd"></a>二、部署argocd</h2><p>github地址：<a target="_blank" rel="noopener" href="https://github.com/argoproj/argo-cd">https://github.com/argoproj/argo-cd</a></p>
+<p><strong>准备环境</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#下载argocd client</span><br>wget https://github.com/argoproj/argo-cd/releases/download/v2.12.7/argocd-linux-amd64<br><br><span class="hljs-comment">#权限</span><br><span class="hljs-built_in">chmod</span> u+x argocd-linux-amd64<br><br><span class="hljs-comment">#移动可执行目录</span><br><span class="hljs-built_in">mv</span> ./argocd-linux-amd64 /usr/local/bin/argocd<br><br><span class="hljs-comment">#验证 </span><br>argo version<br><br><span class="hljs-comment">#准备yaml文件</span><br>wget https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml<br></code></pre></td></tr></table></figure>
+
+<p><strong>修改svc类型</strong></p>
+<p>为了方便测试。将svc类型改成NodePort。实际工作中建议使用ingress</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master231 ~]# vim install.yaml<br>...<br>apiVersion: v1<br>kind: Service<br>metadata:<br>  labels:<br>    app.kubernetes.io/component: server<br>    app.kubernetes.io/name: argocd-server<br>    app.kubernetes.io/part-of: argocd<br>  name: argocd-server<br>spec:<br>  <span class="hljs-comment"># 增加 type: NodePort</span><br>  <span class="hljs-built_in">type</span>: NodePort<br>  ports:<br>  - name: http<br>    port: 80<br>    <span class="hljs-comment"># 该位置增加访问端口 300xxx (30000-32000)任意 我们设置成30080</span><br>    nodePort: 30080<br>    protocol: TCP<br>    targetPort: 8080<br>  - name: https<br>    port: 443<br>    protocol: TCP<br>    targetPort: 8080<br>  selector:<br>    app.kubernetes.io/name: argocd-server<br>...<br></code></pre></td></tr></table></figure>
+
+<p><strong>部署</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">kubectl create namespace argocd<br>kubectl apply -n argocd -f install.yaml<br></code></pre></td></tr></table></figure>
+
+<p><strong>查看pod状态</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">kubectl get all -n argocd<br></code></pre></td></tr></table></figure>
+
+<p><strong>访问</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">https://10.0.0.231:30080/login<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/a659614bebb341bdbaf3996b043b77a0.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p><strong>查看密码</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath=<span class="hljs-string">&quot;&#123;.data.password&#125;&quot;</span> | <span class="hljs-built_in">base64</span> -d; <span class="hljs-built_in">echo</span><br>密码：****  <br>账号：admin<br></code></pre></td></tr></table></figure>
+
+<p><strong>argocd客户端命令行工具修改密码</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master231 bin]# argocd login 10.0.0.231:30080<br>WARNING: server certificate had error: tls: failed to verify certificate: x509: cannot validate certificate <span class="hljs-keyword">for</span> 10.0.0.231 because it doesn<span class="hljs-string">&#x27;t contain any IP SANs. Proceed insecurely (y/n)? y</span><br><span class="hljs-string">Username: admin</span><br><span class="hljs-string">Password: </span><br><span class="hljs-string">&#x27;</span>admin:login<span class="hljs-string">&#x27; logged in successfully</span><br><span class="hljs-string">Context &#x27;</span>10.0.0.231:30080<span class="hljs-string">&#x27; updated</span><br><span class="hljs-string"></span><br><span class="hljs-string">[root@master231 bin]# argocd account update-password</span><br><span class="hljs-string">*** Enter password of currently logged in user (admin): </span><br><span class="hljs-string">*** Enter new password for user admin: </span><br><span class="hljs-string">*** Confirm new password for user admin: </span><br><span class="hljs-string">Password updated</span><br><span class="hljs-string">Context &#x27;</span>10.0.0.231:30080<span class="hljs-string">&#x27; updated</span><br><span class="hljs-string"></span><br><span class="hljs-string">[root@lc-master-1 ~]# argocd logout  192.168.0.71:8082</span><br><span class="hljs-string">Logged out from &#x27;</span>192.168.0.71:8082<span class="hljs-string">&#x27;</span><br><span class="hljs-string">[root@master231 bin]# argocd login 10.0.0.231:30080</span><br><span class="hljs-string">WARNING: server certificate had error: tls: failed to verify certificate: x509: cannot validate certificate for 10.0.0.231 because it doesn&#x27;</span>t contain any IP SANs. Proceed insecurely (y/n)? y<br>Username: admin<br>Password: <br><span class="hljs-string">&#x27;admin:login&#x27;</span> logged <span class="hljs-keyword">in</span> successfully<br>Context <span class="hljs-string">&#x27;10.0.0.231:30080&#x27;</span> updated<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="三、web界面介绍"><a href="#三、web界面介绍" class="headerlink" title="三、web界面介绍"></a>三、web界面介绍</h2><h3 id="设置介绍"><a href="#设置介绍" class="headerlink" title="设置介绍"></a><strong>设置介绍</strong></h3><p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/fb09126f952b41dfa43415c39f4e38f5.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<h3 id="添加仓库地址"><a href="#添加仓库地址" class="headerlink" title="添加仓库地址"></a><strong>添加仓库地址</strong></h3><p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/21dfe8d196044229ac7c1e1b7ef9a211.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/17d2ef035c4047f8870a530c6ae199fe.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>添加成功</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/4b752038d5c24eba9feb7de5d3e08a98.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<h2 id="四、创建应用"><a href="#四、创建应用" class="headerlink" title="四、创建应用"></a>四、创建应用</h2><h3 id="通过-CLI-来创建应用"><a href="#通过-CLI-来创建应用" class="headerlink" title="通过 CLI 来创建应用"></a>通过 CLI 来创建应用</h3><p>在仓库<a target="_blank" rel="noopener" href="https://gitee.com/ljh00928/test_cherry%E9%87%8C%E6%9C%89%E4%B8%AAapp%E7%9B%AE%E5%BD%95%EF%BC%8C%E9%87%8C%E9%9D%A2%E6%9C%89%E4%B8%AA">https://gitee.com/ljh00928/test_cherry里有个app目录，里面有个</a> <a target="_blank" rel="noopener" href="https://gitee.com/zouzou_busy/devops_test/blob/master/app/myapp-deployment.yaml?spm=a2c6h.13046898.publish-article.13.25876ffa0ywKH4&file=myapp-deployment.yaml">myapp-deployment.yaml</a> 文件 和 <a target="_blank" rel="noopener" href="https://gitee.com/zouzou_busy/devops_test/blob/master/app/myapp-service.yaml?spm=a2c6h.13046898.publish-article.14.25876ffa0ywKH4&file=myapp-service.yaml">myapp-service.yaml</a> 文件，用来演示我们 argo cd 的功能</p>
+<p>myapp-deployment.yaml </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs bash">apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>  name: myapp<br>spec:<br>  replicas: 1<br>  selector:<br>    matchLabels:<br>      app: myapp<br>  template:<br>    metadata:<br>      labels:<br>        app: myapp<br>        <span class="hljs-built_in">test</span>: c1<br>    spec:<br>      containers:<br>      - image: yankay/dao-2048:latest<br>        name: myapp<br>        ports:<br>        - containerPort: 8008<br></code></pre></td></tr></table></figure>
+
+<p>myapp-service.yaml</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash">apiVersion: v1<br>kind: Service<br>metadata:<br>  name: myapp-svc<br>spec:<br>  ports:<br>  - port: 8009<br>    targetPort: 8009<br>  <span class="hljs-built_in">type</span>: NodePort<br>  selector:<br>    app: myapp<br></code></pre></td></tr></table></figure>
+
+<p>创建应用</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#查看帮助手册</span><br>argocd app create --<span class="hljs-built_in">help</span><br><br><span class="hljs-comment">#部署应用</span><br>argocd app create app01 --repo https://gitee.com/ljh00928/test_cherry.git --path app --dest-server https://kubernetes.default.svc --dest-namespace demo1<br></code></pre></td></tr></table></figure>
+
+<h3 id="通过-UI-创建应用"><a href="#通过-UI-创建应用" class="headerlink" title="通过 UI 创建应用"></a>通过 UI 创建应用</h3><p>同步策略：</p>
+<p>自动同步允许 Argo CD 自动将 Git 仓库中的应用程序状态同步到 Kubernetes 集群中。</p>
+<p>手动同步要求用户通过 Argo CD UI 或 CLI 手动触发同步操作。</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/fa2f42bc21b64d08bfb9473796e45113.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>由于 Argo CD 支持部署应用到多集群，所以如果你要将应用部署到外部集群的时候，需要先将外部集群的认证信息注册到 Argo CD 中，如果是在内部部署（运行 Argo CD 的同一个集群，默认不需要配置），直接使用 <code>https://kubernetes.default.svc</code> 作为应用的 K8S APIServer 地址即可。</p>
+<p>首先列出当前 <code>kubeconfig</code> 中的所有集群上下文：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master231 ~]# kubectl config get-contexts <br>CURRENT   NAME                          CLUSTER      AUTHINFO           NAMESPACE<br>*         kubernetes-admin@kubernetes   kubernetes   kubernetes-admin    orbstack<br></code></pre></td></tr></table></figure>
+
+<p>从列表中选择一个上下文名称并将其提供给 <code>argocd cluster add CONTEXTNAME</code>，比如对于 <code>orbstack</code> 上下文，运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master231 ~]# argocd cluster list<br>SERVER                          NAME        VERSION  STATUS      MESSAGE  PROJECT<br>https://kubernetes.default.svc  in-cluster  1.23     Successf]ul<br><br>argocd cluster add orbstack<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/3e7e3fcd71bd4a4fab48065455fd8230.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>查看yaml文件</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/537b8072b9ee45b58fe05f53d88c8cfc.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs bash">apiVersion: argoproj.io/v1alpha1<br>kind: Application<br>metadata:<br>  name: app02<br>spec:<br>  destination:<br>    name: <span class="hljs-string">&#x27;&#x27;</span><br>    namespace: demo2<br>    server: <span class="hljs-string">&#x27;https://kubernetes.default.svc&#x27;</span><br>  <span class="hljs-built_in">source</span>:<br>    path: app<br>    repoURL: <span class="hljs-string">&#x27;https://gitee.com/ljh00928/test_cherry.git&#x27;</span><br>    targetRevision: HEAD<br>  project: default<br>  syncPolicy:<br>    automated: null<br>    syncOptions:<br>      - CreateNamespace=<span class="hljs-literal">true</span><br></code></pre></td></tr></table></figure>
+
+<p>填写完以上信息后，点击页面左上方的 Create 安装，即可创建 app02 应用，创建完成后可以看到当前应用的处于 <code>OutOfSync</code> 状态：</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/d4a267c8db484a7589b621c7271df127.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>&#x3D;&#x3D;Argo CD 默认情况下每 3 分钟会检测 Git 仓库一次，用于判断应用实际状态是否和 Git 中声明的期望状态一致，如果不一致，状态就转换为 OutOfSync。默认情况下并不会触发更新，除非通过 syncPolicy 配置了自动同步&#x3D;&#x3D;</p>
+<p><strong>SYNC OPTIONS（同步策略）</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash">spec:<br>  syncPolicy:<br>    syncOptions:<br>    - Validate=<span class="hljs-literal">false</span><br>    - CreateNamespace=<span class="hljs-literal">true</span><br>    - PruneLast=<span class="hljs-literal">true</span><br>    - ApplyOutOfSyncOnly=<span class="hljs-literal">true</span><br>    - Replace=<span class="hljs-literal">false</span><br>    - SkipDryRunOnMissingResource=<span class="hljs-literal">true</span><br></code></pre></td></tr></table></figure>
+
+<p>常见的同步选项包括：</p>
+<ul>
+<li><code>Validate=false</code>: 禁用资源的服务器端验证。这在某些自定义资源（CRD）可能尚未完全定义时非常有用。</li>
+<li><code>CreateNamespace=true</code>: 如果命名空间不存在，自动创建它。</li>
+<li><code>PruneLast=true</code>: 在同步过程中最后执行 <code>prune</code> 操作，以确保所有资源已经创建。</li>
+<li><code>ApplyOutOfSyncOnly=true</code>: 仅应用那些状态不同步的资源。</li>
+<li><code>Replace=false</code>: 使用 <code>kubectl apply</code> 而不是 <code>kubectl replace</code> 来更新资源。</li>
+<li><code>SkipDryRunOnMissingResource=true</code>: 在资源缺失时跳过 <code>dry-run</code> 检查</li>
+</ul>
+<h2 id="五、部署应用"><a href="#五、部署应用" class="headerlink" title="五、部署应用"></a>五、部署应用</h2><p>上面我们创建好了应用，但还没有部署，所以 namespace、pod、deployment、svc 都没有</p>
+<h3 id="使用-CLI-同步"><a href="#使用-CLI-同步" class="headerlink" title="使用 CLI 同步"></a>使用 CLI 同步</h3><p>应用创建完成后，我们可以通过如下所示命令查看其状态</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master231 ~]# argocd app get app01<br>Name:               argocd/app01   <span class="hljs-comment">#应用名称</span><br>Project:            default<br>Server:             https://kubernetes.default.svc  <span class="hljs-comment">#部署的服务</span><br>Namespace:          demo1  <span class="hljs-comment">#部署的ns</span><br>URL:                https://10.0.0.231:30080/applications/app01 <br>Source:<br>- Repo:             https://gitee.com/ljh00928/test_cherry.git  <span class="hljs-comment">#资源仓库</span><br>  Target:           <br>  Path:             app   <span class="hljs-comment">#仓库里的资源路径</span><br>SyncWindow:         Sync Allowed<br>Sync Policy:        Manual<br>Sync Status:        OutOfSync from  (30c6f26)  <span class="hljs-comment">#仓库里的资源路径</span><br>Health Status:      Missing  <span class="hljs-comment">#健康状态</span><br><br>GROUP  KIND        NAMESPACE  NAME       STATUS     HEALTH   HOOK  MESSAGE<br>       Service     demo1      myapp-svc  OutOfSync  Missing        <br>apps   Deployment  demo1      myapp      OutOfSync  Missin<br></code></pre></td></tr></table></figure>
+
+<p>因为 app01 是我们通过命名行创建的，ns 写的是 demo1，没有设置自动创建。如果你集群上没有这个命名空间，需要先手动创建</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master231 ~]# kubectl create ns demo1<br>namespace/demo1 created<br></code></pre></td></tr></table></figure>
+
+<p>应用程序状态为初始 <code>OutOfSync</code> 状态，因为应用程序尚未部署，并且尚未创建任何 Kubernetes 资源。要同步（部署）应用程序，可以执行如下所示命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#同步应用app01</span><br>[root@master231 ~]# argocd app <span class="hljs-built_in">sync</span> app01<br>TIMESTAMP                  GROUP        KIND   NAMESPACE                  NAME    STATUS    HEALTH        HOOK  MESSAGE<br>2025-03-25T15:12:33+08:00            Service       demo1             myapp-svc  OutOfSync  Missing              <br>2025-03-25T15:12:33+08:00   apps  Deployment       demo1                 myapp  OutOfSync  Missing              <br>2025-03-25T15:12:33+08:00            Service       demo1             myapp-svc    Synced  Healthy              <br>2025-03-25T15:12:33+08:00            Service       demo1             myapp-svc    Synced   Healthy              service/myapp-svc created<br>2025-03-25T15:12:33+08:00   apps  Deployment       demo1                 myapp  OutOfSync  Missing              deployment.apps/myapp created<br>2025-03-25T15:12:33+08:00   apps  Deployment       demo1                 myapp    Synced  Progressing              deployment.apps/myapp created<br><br>Name:               argocd/app01<br>Project:            default<br>Server:             https://kubernetes.default.svc<br>Namespace:          demo1<br>URL:                https://10.0.0.231:30080/applications/app01<br>Source:<br>- Repo:             https://gitee.com/ljh00928/test_cherry.git<br>  Target:           <br>  Path:             app<br>SyncWindow:         Sync Allowed<br>Sync Policy:        Manual<br>Sync Status:        Synced to  (30c6f26)<br>Health Status:      Progressing<br><br>Operation:          Sync<br>Sync Revision:      30c6f26bc59ce7f0605caac7c43e5316c55c89ce<br>Phase:              Succeeded<br>Start:              2025-03-25 15:12:33 +0800 CST<br>Finished:           2025-03-25 15:12:33 +0800 CST<br>Duration:           0s<br>Message:            successfully synced (all tasks run)<br><br>GROUP  KIND        NAMESPACE  NAME       STATUS  HEALTH       HOOK  MESSAGE<br>       Service     demo1      myapp-svc  Synced  Healthy            service/myapp-svc created<br>apps   Deployment  demo1      myapp      Synced  Progressing        deployment.apps/myapp created<br></code></pre></td></tr></table></figure>
+
+<p>此命令从 Git 仓库中检索资源清单并执行 <code>kubectl apply</code> 部署应用，执行上面命令后 guestbook 应用便会运行在集群中了，现在我们就可以查看其资源组件、日志、事件和评估其健康状态了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#再次查看app01状态</span><br>[root@master231 ~]# argocd app get app01<br>Name:               argocd/app01<br>Project:            default<br>Server:             https://kubernetes.default.svc<br>Namespace:          demo1<br>URL:                https://10.0.0.231:30080/applications/app01<br>Source:<br>- Repo:             https://gitee.com/ljh00928/test_cherry.git<br>  Target:           <br>  Path:             app<br>SyncWindow:         Sync Allowed<br>Sync Policy:        Manual<br>Sync Status:        Synced to  (30c6f26)<br>Health Status:      Progressing   <span class="hljs-comment">#状态为 Progressing（进行中）了</span><br><br>GROUP  KIND        NAMESPACE  NAME       STATUS  HEALTH       HOOK  MESSAGE<br>       Service     demo1      myapp-svc  Synced  Healthy            service/myapp-svc created<br>apps   Deployment  demo1      myapp      Synced  Progressing        deployment.apps/myapp created<br></code></pre></td></tr></table></figure>
+
+<p>等一会在去查看状态</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master231 ~]# argocd app get app01<br>Name:               argocd/app01<br>Project:            default<br>Server:             https://kubernetes.default.svc<br>Namespace:          demo1<br>URL:                https://10.0.0.231:30080/applications/app01<br>Source:<br>- Repo:             https://gitee.com/ljh00928/test_cherry.git<br>  Target:           <br>  Path:             app<br>SyncWindow:         Sync Allowed<br>Sync Policy:        Manual<br>Sync Status:        Synced to  (8a1ee3f)<br>Health Status:      Healthy    <span class="hljs-comment">#状态为 Healthy（健康）的了</span><br><br>GROUP  KIND        NAMESPACE  NAME       STATUS  HEALTH   HOOK  MESSAGE<br>       Service     demo1      myapp-svc  Synced  Healthy        service/myapp-svc unchanged<br>apps   Deployment  demo1      myapp      Synced  Healthy        deployment.apps/myapp unchanged<br></code></pre></td></tr></table></figure>
+
+<p> 然后查看 pod、deploy、svc</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master231 ~]# kubectl -n demo1 get all<br>NAME                         READY   STATUS    RESTARTS   AGE<br>pod/myapp-6449b755f5-5fkzf   1/1     Running   0          2m26s<br><br>NAME                TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE<br>service/myapp-svc   NodePort   10.200.5.218   &lt;none&gt;        8009:31922/TCP   22m<br><br>NAME                    READY   UP-TO-DATE   AVAILABLE   AGE<br>deployment.apps/myapp   1/1     1            1           22m<br><br>NAME                               DESIRED   CURRENT   READY   AGE<br>replicaset.apps/myapp-5f748b96c    0         0         0       22m<br>replicaset.apps/myapp-6449b755f5   1         1         1       7m18s<br></code></pre></td></tr></table></figure>
+
+<h3 id="使用-UI-界面同步"><a href="#使用-UI-界面同步" class="headerlink" title="使用 UI 界面同步"></a>使用 UI 界面同步</h3><p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/0857ff9730414e6691e334755b9af0b3.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>查看资源状态</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/fc3ce3c2686443b297732806089192d7.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>也可以查看日志、event 等信息</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/332cdfbf3fd5492e951a22bbfc673e86.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>查看 pod、deploy、svc。都运行正常</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master231 ~]# kubectl -n demo2 get all<br>NAME                         READY   STATUS    RESTARTS   AGE<br>pod/myapp-6449b755f5-4tl7m   1/1     Running   0          7m20s<br><br>NAME                TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE<br>service/myapp-svc   NodePort   10.200.164.64   &lt;none&gt;        8009:31185/TCP   7m20s<br><br>NAME                    READY   UP-TO-DATE   AVAILABLE   AGE<br>deployment.apps/myapp   1/1     1            1           7m20s<br><br>NAME                               DESIRED   CURRENT   READY   AGE<br>replicaset.apps/myapp-6449b755f5   1         1         1       7m20s<br></code></pre></td></tr></table></figure>
+
+<h2 id="六、更新应用"><a href="#六、更新应用" class="headerlink" title="六、更新应用"></a>六、更新应用</h2><p>上面我们已经部署好了两个应用 app01 和 app02，现在来更改一下 myapp-deployment.yaml 文件，将镜像改为green</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/0278af6638ad4285b655e435b59bb389.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>再次点击sync同步按钮，可以看见有两个rs,一个副本数为 0，一个副本数为 1</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/7fd8c69b053c470a8f0d26f6023913fc.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master231 ~]# kubectl -n demo2 get rs<br>NAME               DESIRED   CURRENT   READY   AGE<br>myapp-6449b755f5   0         0         0       19m<br>myapp-65c5d9cf87   1         1         1       4m3s<br></code></pre></td></tr></table></figure>
+
+<h2 id="七、回滚"><a href="#七、回滚" class="headerlink" title="七、回滚"></a>七、回滚</h2><p>上面我们的 app02 已经有两个版本了，现在最新的是 geen版本，我们也可以可以回滚到第一个版本</p>
+<p>现在是这个版本</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/ea8d0b2632244d7ba6a20dde06e58dad.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>在回滚的时候需要禁用 AUTO-SYNC 自动同步，点击历史和回滚。找到要回滚的版本，点击 Rollback</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/b52f3c52db6040829d9a054f990bf1dc.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/f27b292e1868437dab42657ce0cef295.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>这时候已经回滚到第一个版本了</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/d86d9c05e6cf4201a764845d0f109750.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#回滚前</span><br>[root@master231 ~]# kubectl -n demo2 get rs<br>NAME               DESIRED   CURRENT   READY   AGE<br>myapp-6449b755f5   0         0         0       32m<br>myapp-65c5d9cf87   1         1         1       16m<br><br><span class="hljs-comment">#回滚后</span><br>[root@master231 ~]# kubectl -n demo2 get rs<br>NAME               DESIRED   CURRENT   READY   AGE<br>myapp-6449b755f5   1         1         1       35m<br>myapp-65c5d9cf87   0         0         0       19m<br></code></pre></td></tr></table></figure>
+
+<p>查看 pod，svc，deployment</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master231 ~]# kubectl -n demo2 get all<br>NAME                         READY   STATUS    RESTARTS   AGE<br>pod/myapp-6449b755f5-252l9   1/1     Running   0          3m10s<br><br>NAME                TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE<br>service/myapp-svc   NodePort   10.200.164.64   &lt;none&gt;        8009:31185/TCP   36m<br><br>NAME                    READY   UP-TO-DATE   AVAILABLE   AGE<br>deployment.apps/myapp   1/1     1            1           36m<br><br>NAME                               DESIRED   CURRENT   READY   AGE<br>replicaset.apps/myapp-6449b755f5   1         1         1       36m<br>replicaset.apps/myapp-65c5d9cf87   0         0         0       20m<br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/CICD/" class="category-chain-item">CICD</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/CICD/" class="print-no-link">#CICD</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>在K8S中使用ArgoCD做持续部署</div>
+      <div>http://example.com/2025/04/18/在K8S中使用ArgoCD做持续部署/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>淡黄的cherry</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/18/ceph%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%EF%BC%8C%E6%9E%B6%E6%9E%84%EF%BC%8C%E9%83%A8%E7%BD%B2%EF%BC%88%E4%B8%80%EF%BC%89/" title="ceph基本概念，架构，部署（一）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">ceph基本概念，架构，部署（一）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/18/jenkins-gitlab-docker-harbor-k8s%E7%BB%88%E7%BB%93%E7%AF%87/" title="jenkins+gitlab+docker+harbor+k8s终结篇">
+                        <span class="hidden-mobile">jenkins+gitlab+docker+harbor+k8s终结篇</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  <div>
+    <span id="timeDate">正在载入天数...</span>
+    <span id="times">载入时分秒...</span>
+    <script>
+    var now = new Date();
+    function createtime(){
+        var grt= new Date("08/17/2020 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24;
+        dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum);
+        hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){
+            hnum = "0" + hnum;
+        }
+        minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes);
+        if(String(mnum).length ==1 ){
+                  mnum = "0" + mnum;
+        }
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds);
+        if(String(snum).length ==1 ){
+                  snum = "0" + snum;
+        }
+        document.getElementById("timeDate").innerHTML = "🚀已持续航行&nbsp"+dnum+"&nbsp天";  
+        document.getElementById("times").innerHTML = hnum + "&nbsp时&nbsp" + mnum + "&nbsp分&nbsp" + snum + "&nbsp秒";
+    }
+    setInterval("createtime()",250);
+    </script>
+  </div>
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom.js"></script>
+<script src="/js/snow.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

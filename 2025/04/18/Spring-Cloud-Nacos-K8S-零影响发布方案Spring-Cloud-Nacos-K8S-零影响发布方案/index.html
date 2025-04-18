@@ -1,0 +1,710 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/2.png">
+  <link rel="icon" href="/img/2.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="淡黄的cherry">
+  <meta name="keywords" content="">
+  <meta name="referrer" content="no-referrer">
+  
+    <meta name="description" content="问题描述在生产环境中使用 springcloud 框架，由于服务更新过程中，容器服务会被直接停止，部分请求仍被分发到终止的容器，导致服务出现500错误，这部分错误请求数据占用比较少，因为Pod滚动更新都是一对一。因为部分用户会产生服务器错误的情况，考虑使用优雅的终止方式，将错误请求降到最低，直至滚动更新不影响用户。这里结合nacos使用来分析。 在 K8s 的滚动升级中，比如 5 个 Pod 服务">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud + Nacos + K8S 零影响发布方案Spring Cloud + Nacos + K8S 零影响发布方案">
+<meta property="og:url" content="http://example.com/2025/04/18/Spring-Cloud-Nacos-K8S-%E9%9B%B6%E5%BD%B1%E5%93%8D%E5%8F%91%E5%B8%83%E6%96%B9%E6%A1%88Spring-Cloud-Nacos-K8S-%E9%9B%B6%E5%BD%B1%E5%93%8D%E5%8F%91%E5%B8%83%E6%96%B9%E6%A1%88/index.html">
+<meta property="og:site_name" content="cherry">
+<meta property="og:description" content="问题描述在生产环境中使用 springcloud 框架，由于服务更新过程中，容器服务会被直接停止，部分请求仍被分发到终止的容器，导致服务出现500错误，这部分错误请求数据占用比较少，因为Pod滚动更新都是一对一。因为部分用户会产生服务器错误的情况，考虑使用优雅的终止方式，将错误请求降到最低，直至滚动更新不影响用户。这里结合nacos使用来分析。 在 K8s 的滚动升级中，比如 5 个 Pod 服务">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-04-18T03:31:47.000Z">
+<meta property="article:modified_time" content="2025-04-18T04:45:06.361Z">
+<meta property="article:author" content="淡黄的cherry">
+<meta property="article:tag" content="k8s">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Spring Cloud + Nacos + K8S 零影响发布方案Spring Cloud + Nacos + K8S 零影响发布方案 - cherry</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/macpanel.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong class="navbar-title">cherryの技术文档</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Spring Cloud + Nacos + K8S 零影响发布方案Spring Cloud + Nacos + K8S 零影响发布方案"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-18 11:31" pubdate>
+          2025年4月18日 中午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          14 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Spring Cloud + Nacos + K8S 零影响发布方案Spring Cloud + Nacos + K8S 零影响发布方案</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h1><p>在生产环境中使用 springcloud 框架，由于服务更新过程中，容器服务会被直接停止，部分请求仍被分发到终止的容器，导致服务出现500错误，这部分错误请求数据占用比较少，因为Pod滚动更新都是一对一。因为部分用户会产生服务器错误的情况，考虑使用优雅的终止方式，将错误请求降到最低，直至滚动更新不影响用户。这里结合nacos使用来分析。</p>
+<p>在 K8s 的滚动升级中，比如 5 个 Pod 服务在升级过程中，会先启动一半左右（比如：3 个新的启动），然后下线一部分服务……直到所有的旧服务被新服务完全替代，简单粗暴的理解滚动升级。如果我们不涉及 Nacos 还好，因为 K8s 会保证在升级过程中，因为负载的情况很有可能在升级过程中会一部分请求打到旧服务里，但是如果在旧服务准备关闭服务时，旧情求还没返回回去的话就会出现 HTTP 连接关闭情况等一些不可预测的意外发生，导致本次请求的业务失败，这是在生产上绝不能出现的事故。针对 K8s 的优雅关闭问题，我们可以继续往下看，下面会介绍 Nacos &amp; K8s 一个结合优雅关闭的方案。</p>
+<p>我们来再谈谈 Nacos 在这里如果无优雅关闭的话会出现的情况，其实和 K8s 的本质很类似，假如我们已经解决了 K8s 的优雅关闭问题，那和 Nacos 之间又有什么联系呢？</p>
+<p>我们可以想象下，还是举例上面的 5 个 Pod 的情景，在一个 Pod 启动时，服务的也自然会注册到 Nacos 上去，同理可得，在服务关闭时，Nacos 注册列表里服务也自然会被下线。那么类似的情况也会出现，如果说此时的情求打到旧服务上面，但是由于 Nacos 有监听时间（默认 30s）拉取一次最新情况，以及在每个 Pod 服务里本地也有一份缓存映射表（也有一个窗口时间更新），所以很有可能在这个窗口期之内，还有一些的旧的请求访问负载到旧服务里，但是这里会出现两种情况</p>
+<p>K8s Pod 服务已下线，但是 Nacos 在窗口时间之内注册列表未更新，导致请求达到一个根本不存在的旧服务里 旧请求已经打到旧服务里，但是高峰期时，程序处理较慢，还没来及返回响应体，服务就被关闭了 以上这两种情况都会导致本次请求出现失败，生产上更是无语~ 所以我们针对 Nacos 的优雅关闭情况也会有一个解决方案，见“Nacos &amp; K8s 优雅关闭方案”</p>
+<h1 id="一、思路"><a href="#一、思路" class="headerlink" title="一、思路"></a>一、思路</h1><p>为了解决这个问题, 我们将利用 springboot 的 graceful shutdown 功能和 nacos 的主动下线功能来解决这个问题. 具体思路如下:</p>
+<p>1、让新的服务先启动起来，注册到注册中心，等待客户端发现新服务。</p>
+<p>2、把待下线的服务从注册中心下线，等待客户端刷新服务列表。</p>
+<p>3、把待下线的服务优雅停机。</p>
+<h1 id="二、实现方式"><a href="#二、实现方式" class="headerlink" title="二、实现方式"></a>二、实现方式</h1><h2 id="1-创建从-nacos-中下线副本的API"><a href="#1-创建从-nacos-中下线副本的API" class="headerlink" title="1.创建从 nacos 中下线副本的API"></a><strong>1.创建从 nacos 中下线副本的API</strong></h2><p>我们通过创建自定义名为 <code>deregister</code> 的 <code>endpoint</code> 来通知 <code>nacos</code> 下线副本</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> com.alibaba.cloud.nacos.NacosDiscoveryProperties;<br><span class="hljs-keyword">import</span> com.alibaba.cloud.nacos.registry.NacosRegistration;<br><span class="hljs-keyword">import</span> com.alibaba.cloud.nacos.registry.NacosServiceRegistry;<br><span class="hljs-keyword">import</span> lombok.extern.log4j.Log4j2;<br><span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;<br><span class="hljs-keyword">import</span> org.springframework.boot.actuate.endpoint.annotation.Endpoint;<br><span class="hljs-keyword">import</span> org.springframework.boot.actuate.endpoint.annotation.ReadOperation;<br><span class="hljs-keyword">import</span> org.springframework.stereotype.Component;<br><br><span class="hljs-meta">@Component</span><br><span class="hljs-meta">@Endpoint(id = &quot;deregister&quot;)</span><br><span class="hljs-meta">@Log4j2</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">LemesNacosServiceDeregisterEndpoint</span> &#123;<br><br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> NacosDiscoveryProperties nacosDiscoveryProperties;<br><br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> NacosRegistration nacosRegistration;<br><br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> NacosServiceRegistry nacosServiceRegistry;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 从 nacos 中主动下线，用于 k8s 滚动更新时，提前下线分流流量</span><br><span class="hljs-comment">     *</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span></span><br><span class="hljs-comment">     * <span class="hljs-doctag">@return</span> com.lenovo.lemes.framework.core.util.ResultData&lt;java.lang.String&gt;</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@author</span> Yujie Yang</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@date</span> 4/6/22 2:57 PM</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-meta">@ReadOperation</span><br>    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">endpoint</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-type">String</span> <span class="hljs-variable">serviceName</span> <span class="hljs-operator">=</span> nacosDiscoveryProperties.getService();<br>        <span class="hljs-type">String</span> <span class="hljs-variable">groupName</span> <span class="hljs-operator">=</span> nacosDiscoveryProperties.getGroup();<br>        <span class="hljs-type">String</span> <span class="hljs-variable">clusterName</span> <span class="hljs-operator">=</span> nacosDiscoveryProperties.getClusterName();<br>        <span class="hljs-type">String</span> <span class="hljs-variable">ip</span> <span class="hljs-operator">=</span> nacosDiscoveryProperties.getIp();<br>        <span class="hljs-type">int</span> <span class="hljs-variable">port</span> <span class="hljs-operator">=</span> nacosDiscoveryProperties.getPort();<br><br>        log.info(<span class="hljs-string">&quot;deregister from nacos, serviceName:&#123;&#125;, groupName:&#123;&#125;, clusterName:&#123;&#125;, ip:&#123;&#125;, port:&#123;&#125;&quot;</span>, serviceName, groupName, clusterName, ip, port);<br><br>        <span class="hljs-comment">// 设置服务下线</span><br>        nacosServiceRegistry.setStatus(nacosRegistration, <span class="hljs-string">&quot;DOWN&quot;</span>);<br><br>        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;success&quot;</span>;<br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="2-支持-Graceful-Shutdown"><a href="#2-支持-Graceful-Shutdown" class="headerlink" title="2.支持 Graceful Shutdown"></a>2.支持 Graceful Shutdown</h2><p>Spring Boot 原生支持已经支持优雅停机。</p>
+<p>我们需要添加下面的配置，超时需要根据平时请求的耗时来定，可以稍微大一点也没关系。我们只需要在 <code>bootstrap.yaml</code> 中添加一下配置即可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs java">server:<br>  # 开启优雅下线<br>  shutdown: graceful<br><br>spring:<br>  lifecycle:<br>    # 优雅下线超时时间<br>    timeout-per-shutdown-phase: 5m<br># 暴露 shutdown 接口<br>management:<br>  endpoint:<br>    shutdown:<br>      enabled: <span class="hljs-literal">true</span><br>  endpoints:<br>    web:<br>      exposure:<br>        include: shutdown<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-配置K8s"><a href="#3-配置K8s" class="headerlink" title="3.配置K8s"></a>3.配置K8s</h2><p>有了上面两个 API, 接下来就配置到 k8s 上</p>
+<p>1.K8S容器本身有一个就绪探针配置，当就绪探针返回正常，则开始删除旧POD。</p>
+<p>2.terminationGracePeriodSeconds 如果关闭应用的时间超过 10 分钟, 则向容器发送 kill 信号, 防止应用长时间下线不了</p>
+<p>terminationGracePeriodSeconds要大于preStop+spring.lifecycle.timeout-per-shutdown-phase，可以设置大一点没什么关系。</p>
+<p>3.preStop 先执行下线操作, 等待30s, 留够通知到其他应用的时间, 然后执行 graceful shutdown 关闭应用。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br></pre></td><td class="code"><pre><code class="hljs bash">---<br>apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>  name: lemes-service-common<br>  labels:<br>    app: lemes-service-common<br>spec:<br>  replicas: 2<br>  selector:<br>    matchLabels:<br>      app: lemes-service-common<br><span class="hljs-comment">#  strategy:</span><br><span class="hljs-comment">#    type: RollingUpdate</span><br><span class="hljs-comment">#    rollingUpdate:</span><br><span class="hljs-comment">##     replicas - maxUnavailable &lt; running num  &lt; replicas + maxSurge</span><br><span class="hljs-comment">#      maxUnavailable: 1</span><br><span class="hljs-comment">#      maxSurge: 1</span><br>  template:<br>    metadata:<br>      labels:<br>        app: lemes-service-common<br>    spec:<br><span class="hljs-comment">#      容器重启策略 Never Always OnFailure</span><br><span class="hljs-comment">#      restartPolicy: Never</span><br><span class="hljs-comment">#     在pod优雅终止时，定义延迟发送kill信号的时间，此时间可用于pod处理完未处理的请求等状况。默认单位是秒</span><br><span class="hljs-comment">#     如果关闭时间超过10分钟， 则向容器发送kill信号</span><br>      terminationGracePeriodSeconds: 600<br>      affinity:<br>        podAntiAffinity:<br>          preferredDuringSchedulingIgnoredDuringExecution:<br>            - podAffinityTerm:<br>                topologyKey: <span class="hljs-string">&quot;kubernetes.io/hostname&quot;</span><br>                labelSelector:<br>                  matchExpressions:<br>                    - key: app<br>                      operator: In<br>                      values:<br>                        - lemes-service-common<br>              weight: 100<br><span class="hljs-comment">#          requiredDuringSchedulingIgnoredDuringExecution:</span><br><span class="hljs-comment">#            - labelSelector:</span><br><span class="hljs-comment">#                matchExpressions:</span><br><span class="hljs-comment">#                  - key: app</span><br><span class="hljs-comment">#                    operator: In</span><br><span class="hljs-comment">#                    values:</span><br><span class="hljs-comment">#                      - lemes-service-common</span><br><span class="hljs-comment">#              topologyKey: &quot;kubernetes.io/hostname&quot;</span><br>      volumes:<br>        - name: lemes-host-path<br>          hostPath:<br>            path: /data/logs<br>            <span class="hljs-built_in">type</span>: DirectoryOrCreate<br>        - name: sidecar<br>          emptyDir: &#123; &#125;<br>      containers:<br>        - name: lemes-service-common<br>          image: 10.176.66.20:5000/lemes-cloud/lemes-service-common-server:v0.1<br>          imagePullPolicy: Always<br>          volumeMounts:<br>            - name: lemes-host-path<br>              mountPath: /data/logs<br>            - name: sidecar<br>              mountPath: /sidecar<br>          ports:<br>            - containerPort: 80<br>          resources:<br><span class="hljs-comment">#           资源通常情况下的占用</span><br>            requests:<br>              memory: <span class="hljs-string">&#x27;2048Mi&#x27;</span><br><span class="hljs-comment">#           资源占用上限</span><br>            limits:<br>              memory: <span class="hljs-string">&#x27;4096Mi&#x27;</span><br>          livenessProbe:<br>            httpGet:<br><span class="hljs-comment">#             指定 Kubernetes 访问的健康检查 URL 路径</span><br>              path: /actuator/health/liveness<br>              port: 80<br>            initialDelaySeconds: 5<br><span class="hljs-comment">#           探针可以连续失败的次数</span><br>            failureThreshold: 10<br><span class="hljs-comment">#           探针超时时间</span><br>            timeoutSeconds: 10<br><span class="hljs-comment">#           多久执行一次探针查询</span><br>            periodSeconds: 10<br>          startupProbe:<br>            httpGet:<br>              path: /actuator/health/liveness<br>              port: 80<br>            failureThreshold: 30<br>            timeoutSeconds: 10<br>            periodSeconds: 10<br>          readinessProbe:<br>            httpGet:<br>              path: /actuator/health/readiness<br>              port: 80<br>            initialDelaySeconds: 5<br>            timeoutSeconds: 10<br>            periodSeconds: 10<br>          lifecycle:<br>            preStop:<br>              <span class="hljs-built_in">exec</span>:<br><span class="hljs-comment">#应用关闭操作：1. 从 nacos 下线，2. 等待30s, 保证 nacos 通知到其他应用 2.触发 springboot 的 graceful shutdown</span><br>                <span class="hljs-built_in">command</span>:<br>                  - sh<br>                  - -c<br>                  - curl http://127.0.0.1/actuator/deregister;<span class="hljs-built_in">sleep</span> 30;curl -X POST http://127.0.0.1/actuator/shutdown;<br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/" class="category-chain-item">云原生</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/k8s/" class="print-no-link">#k8s</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Spring Cloud + Nacos + K8S 零影响发布方案Spring Cloud + Nacos + K8S 零影响发布方案</div>
+      <div>http://example.com/2025/04/18/Spring-Cloud-Nacos-K8S-零影响发布方案Spring-Cloud-Nacos-K8S-零影响发布方案/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>淡黄的cherry</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/18/RuoYi-Cloud%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B2/" title="RuoYi-Cloud微服务项目部署">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">RuoYi-Cloud微服务项目部署</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/18/k8s%E9%9B%86%E6%88%90MinIo/" title="k8s集成MinIo">
+                        <span class="hidden-mobile">k8s集成MinIo</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  <div>
+    <span id="timeDate">正在载入天数...</span>
+    <span id="times">载入时分秒...</span>
+    <script>
+    var now = new Date();
+    function createtime(){
+        var grt= new Date("08/17/2020 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24;
+        dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum);
+        hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){
+            hnum = "0" + hnum;
+        }
+        minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes);
+        if(String(mnum).length ==1 ){
+                  mnum = "0" + mnum;
+        }
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds);
+        if(String(snum).length ==1 ){
+                  snum = "0" + snum;
+        }
+        document.getElementById("timeDate").innerHTML = "🚀已持续航行&nbsp"+dnum+"&nbsp天";  
+        document.getElementById("times").innerHTML = hnum + "&nbsp时&nbsp" + mnum + "&nbsp分&nbsp" + snum + "&nbsp秒";
+    }
+    setInterval("createtime()",250);
+    </script>
+  </div>
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom.js"></script>
+<script src="/js/snow.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

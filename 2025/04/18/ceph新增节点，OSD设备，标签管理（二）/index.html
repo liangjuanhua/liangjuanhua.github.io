@@ -1,0 +1,792 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/2.png">
+  <link rel="icon" href="/img/2.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="淡黄的cherry">
+  <meta name="keywords" content="">
+  <meta name="referrer" content="no-referrer">
+  
+    <meta name="description" content="一、访问客户端集群方式方式一: 使用cephadm shell交互式配置 12345678910111213141516171819202122232425[root@ceph141 ~]# cephadm shell    # 注意，此命令会启动一个新的容器，运行玩后会退出！Inferring fsid c153209c-d8a0-11ef-a0ed-bdb84668ed01Inferring">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ceph新增节点，OSD设备，标签管理（二）">
+<meta property="og:url" content="http://example.com/2025/04/18/ceph%E6%96%B0%E5%A2%9E%E8%8A%82%E7%82%B9%EF%BC%8COSD%E8%AE%BE%E5%A4%87%EF%BC%8C%E6%A0%87%E7%AD%BE%E7%AE%A1%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89/index.html">
+<meta property="og:site_name" content="cherry">
+<meta property="og:description" content="一、访问客户端集群方式方式一: 使用cephadm shell交互式配置 12345678910111213141516171819202122232425[root@ceph141 ~]# cephadm shell    # 注意，此命令会启动一个新的容器，运行玩后会退出！Inferring fsid c153209c-d8a0-11ef-a0ed-bdb84668ed01Inferring">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/0f88adaa536d4c5b9d39d71a2aca5a66.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/187d60c358e74fd989e12828ca90dba8.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/0c976ae7fdbf4a8597b4f0bac742eeb5.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/f310cf021830485da4cfcc35be26b243.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/d8b564855fed4e15ac0e0b28691971d6.png">
+<meta property="article:published_time" content="2025-04-18T03:19:21.000Z">
+<meta property="article:modified_time" content="2025-04-18T03:23:50.390Z">
+<meta property="article:author" content="淡黄的cherry">
+<meta property="article:tag" content="Ceph">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/0f88adaa536d4c5b9d39d71a2aca5a66.png">
+  
+  
+  
+  <title>ceph新增节点，OSD设备，标签管理（二） - cherry</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/macpanel.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong class="navbar-title">cherryの技术文档</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="ceph新增节点，OSD设备，标签管理（二）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-18 11:19" pubdate>
+          2025年4月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          14 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">ceph新增节点，OSD设备，标签管理（二）</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="一、访问客户端集群方式"><a href="#一、访问客户端集群方式" class="headerlink" title="一、访问客户端集群方式"></a>一、访问客户端集群方式</h2><p>方式一: 使用cephadm shell交互式配置</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs awk">[root@ceph141 ~]<span class="hljs-comment"># cephadm shell    # 注意，此命令会启动一个新的容器，运行玩后会退出！</span><br>Inferring fsid c153209c-d8a0-<span class="hljs-number">11</span>ef-a0ed-bdb84668ed01<br>Inferring config <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span>c153209c-d8a0-<span class="hljs-number">11</span>ef-a0ed-bdb84668ed01<span class="hljs-regexp">/mon.ceph141/</span>config<br>Using ceph image with id <span class="hljs-string">&#x27;2bc0b0f4375d&#x27;</span> and tag <span class="hljs-string">&#x27;v18&#x27;</span> created on <span class="hljs-number">2024</span>-<span class="hljs-number">07</span>-<span class="hljs-number">24</span> <span class="hljs-number">06</span>:<span class="hljs-number">19</span>:<span class="hljs-number">35</span> +<span class="hljs-number">0800</span> CST<br>quay.io<span class="hljs-regexp">/ceph/</span>ceph@sha256:<span class="hljs-number">6</span>ac7f923aa1d23b43248ce0ddec7e1388855ee3d00813b52c3172b0b23b37906<br>root@ceph141:/<span class="hljs-comment"># ceph -s</span><br>  cluster:<br>    id:     c153209c-d8a0-<span class="hljs-number">11</span>ef-a0ed-bdb84668ed01<br>    health: HEALTH_WARN<br>            mon ceph141 is low on available space<br>            OSD count <span class="hljs-number">0</span> &lt; osd_pool_default_size <span class="hljs-number">3</span><br> <br>  services:<br>    mon: <span class="hljs-number">1</span> daemons, quorum ceph141 (age <span class="hljs-number">17</span>h)<br>    mgr: ceph141.iphxbv(active, since <span class="hljs-number">17</span>h)<br>    osd: <span class="hljs-number">0</span> osds: <span class="hljs-number">0</span> up, <span class="hljs-number">0</span> <span class="hljs-keyword">in</span><br> <br>  data:<br>    pools:   <span class="hljs-number">0</span> pools, <span class="hljs-number">0</span> pgs<br>    objects: <span class="hljs-number">0</span> objects, <span class="hljs-number">0</span> B<br>    usage:   <span class="hljs-number">0</span> B used, <span class="hljs-number">0</span> B / <span class="hljs-number">0</span> B avail<br>    pgs:     <br> <br>root@ceph141:/<span class="hljs-comment"># exit</span><br><span class="hljs-keyword">exit</span><br></code></pre></td></tr></table></figure>
+
+<p>方式二: 使用cephadm非交互式配置，依旧会启动容器，运行玩后会退出！</p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs nix">[root@ceph141 ~]<span class="hljs-comment"># cephadm shell -- ceph -s</span><br>Inferring fsid c153209c-d8a0-<span class="hljs-number">11</span>ef-a0ed-bdb84668ed01<br>Inferring config <span class="hljs-symbol">/var/lib/ceph/c153209c-d8a0-11ef-a0ed-bdb84668ed01/mon.ceph141/config</span><br>Using ceph image <span class="hljs-keyword">with</span> id &#x27;<span class="hljs-number">2</span>bc0b0f4375d&#x27; and tag &#x27;v18&#x27; created on <span class="hljs-number">202</span>4-<span class="hljs-number">0</span>7-<span class="hljs-number">24</span> <span class="hljs-number">06</span>:<span class="hljs-number">19</span>:<span class="hljs-number">35</span> <span class="hljs-operator">+</span><span class="hljs-number">0800</span> CST<br>quay.io<span class="hljs-operator">/</span>ceph<span class="hljs-operator">/</span>ceph@sha256:<span class="hljs-number">6</span>ac7f923aa1d23b43248ce0ddec7e1388855ee3d00813b52c3172b0b23b37906<br>  <span class="hljs-params">cluster:</span><br>    <span class="hljs-params">id:</span>     c153209c-d8a0-<span class="hljs-number">11</span>ef-a0ed-bdb84668ed01<br>    <span class="hljs-params">health:</span> HEALTH_WARN<br>            mon ceph141 is low on available space<br>            OSD count <span class="hljs-number">0</span> <span class="hljs-operator">&lt;</span> osd_pool_default_size <span class="hljs-number">3</span><br> <br>  <span class="hljs-params">services:</span><br>    <span class="hljs-params">mon:</span> <span class="hljs-number">1</span> daemons, quorum ceph141 (age <span class="hljs-number">17</span>h)<br>    <span class="hljs-params">mgr:</span> ceph141.iphxbv(active, since <span class="hljs-number">17</span>h)<br>    <span class="hljs-params">osd:</span> <span class="hljs-number">0</span> <span class="hljs-params">osds:</span> <span class="hljs-number">0</span> up, <span class="hljs-number">0</span> <span class="hljs-keyword">in</span><br> <br>  <span class="hljs-params">data:</span><br>    <span class="hljs-params">pools:</span>   <span class="hljs-number">0</span> pools, <span class="hljs-number">0</span> pgs<br>    <span class="hljs-params">objects:</span> <span class="hljs-number">0</span> objects, <span class="hljs-number">0</span> B<br>    <span class="hljs-params">usage:</span>   <span class="hljs-number">0</span> B used, <span class="hljs-number">0</span> B <span class="hljs-symbol">/</span> <span class="hljs-number">0</span> B avail<br>    pgs:<br></code></pre></td></tr></table></figure>
+
+<p>方式三: 安装ceph通用包，其中包含所有ceph命令，包括ceph、rbd、mount.ceph（用于挂载CephFS文件系统）等【推荐使用】</p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs nix">[root@ceph141 ~]<span class="hljs-comment"># cephadm add-repo --release reef # 配置本地的apt源</span><br>[root@ceph141 ~]<span class="hljs-comment"># cephadm install ceph-common     # 此步骤，相当于apt -y install ceph-common</span><br>Installing packages [&#x27;ceph-common&#x27;]...<br>[root@ceph141 ~]<span class="hljs-comment"># ceph -s </span><br>  <span class="hljs-params">cluster:</span><br>    <span class="hljs-params">id:</span>     c153209c-d8a0-<span class="hljs-number">11</span>ef-a0ed-bdb84668ed01<br>    <span class="hljs-params">health:</span> HEALTH_WARN<br>            mon ceph141 is low on available space<br>            OSD count <span class="hljs-number">0</span> <span class="hljs-operator">&lt;</span> osd_pool_default_size <span class="hljs-number">3</span><br> <br>  <span class="hljs-params">services:</span><br>    <span class="hljs-params">mon:</span> <span class="hljs-number">1</span> daemons, quorum ceph141 (age <span class="hljs-number">17</span>h)<br>    <span class="hljs-params">mgr:</span> ceph141.iphxbv(active, since <span class="hljs-number">17</span>h)<br>    <span class="hljs-params">osd:</span> <span class="hljs-number">0</span> <span class="hljs-params">osds:</span> <span class="hljs-number">0</span> up, <span class="hljs-number">0</span> <span class="hljs-keyword">in</span><br> <br>  <span class="hljs-params">data:</span><br>    <span class="hljs-params">pools:</span>   <span class="hljs-number">0</span> pools, <span class="hljs-number">0</span> pgs<br>    <span class="hljs-params">objects:</span> <span class="hljs-number">0</span> objects, <span class="hljs-number">0</span> B<br>    <span class="hljs-params">usage:</span>   <span class="hljs-number">0</span> B used, <span class="hljs-number">0</span> B <span class="hljs-symbol">/</span> <span class="hljs-number">0</span> B avail<br>    pgs:<br></code></pre></td></tr></table></figure>
+
+<p><strong>基于命令行的方式修改ceph的dashboard的密码</strong></p>
+<p>修改admin的密码为1</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs markdown">[root@ceph141 ~]# echo 1 | ceph dashboard set-login-credentials admin -i -<br><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span>**<br><span class="hljs-strong">***          WARNING: this command is deprecated.              **</span>*<br><span class="hljs-strong">*** Please use the ac-user-* related commands to manage users. **</span>*<br><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span><span class="hljs-strong">****</span>**<br>Username and password updated<br></code></pre></td></tr></table></figure>
+
+<h2 id="二、ceph集群添加或移除主机"><a href="#二、ceph集群添加或移除主机" class="headerlink" title="二、ceph集群添加或移除主机"></a>二、<strong>ceph集群添加或移除主机</strong></h2><p>1.查看现有的集群主机列表</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs coffeescript">[root@ceph141 ~]<span class="hljs-comment"># ceph orch host ls</span><br>HOST     ADDR        LABELS  STATUS  <br>ceph141  <span class="hljs-number">10.0</span><span class="hljs-number">.0</span><span class="hljs-number">.141</span>  _admin          <br><span class="hljs-number">1</span> hosts <span class="hljs-keyword">in</span> cluster<br></code></pre></td></tr></table></figure>
+
+<p> 2.拷贝密钥到其他服务器上</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs swift">[root<span class="hljs-meta">@ceph141</span> <span class="hljs-operator">~</span>]# ssh<span class="hljs-operator">-</span><span class="hljs-keyword">copy</span><span class="hljs-operator">-</span>id <span class="hljs-operator">-</span>f <span class="hljs-operator">-</span>i <span class="hljs-regexp">/etc/</span>ceph<span class="hljs-operator">/</span>ceph.pub ceph142<br>[root<span class="hljs-meta">@ceph141</span> <span class="hljs-operator">~</span>]# ssh<span class="hljs-operator">-</span><span class="hljs-keyword">copy</span><span class="hljs-operator">-</span>id <span class="hljs-operator">-</span>f <span class="hljs-operator">-</span>i <span class="hljs-regexp">/etc/</span>ceph<span class="hljs-operator">/</span>ceph.pub ceph143<br></code></pre></td></tr></table></figure>
+
+<p>3.将密钥节点加入集群</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs coffeescript">[root@ceph141 ~]<span class="hljs-comment"># ceph orch host add ceph142 10.0.0.142</span><br>Added host <span class="hljs-string">&#x27;ceph142&#x27;</span> <span class="hljs-keyword">with</span> addr <span class="hljs-string">&#x27;10.0.0.142&#x27;</span><br><br>[root@ceph141 ~]<span class="hljs-comment"># ceph orch host add ceph143 10.0.0.143</span><br>Added host <span class="hljs-string">&#x27;ceph143&#x27;</span> <span class="hljs-keyword">with</span> addr <span class="hljs-string">&#x27;10.0.0.143&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<p>4.再次查看主机列表</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs coffeescript">[root@ceph141 ~]<span class="hljs-comment"># ceph orch host ls</span><br>HOST     ADDR        LABELS  STATUS  <br>ceph141  <span class="hljs-number">10.0</span><span class="hljs-number">.0</span><span class="hljs-number">.141</span>  _admin          <br>ceph142  <span class="hljs-number">10.0</span><span class="hljs-number">.0</span><span class="hljs-number">.142</span>                  <br>ceph143  <span class="hljs-number">10.0</span><span class="hljs-number">.0</span><span class="hljs-number">.143</span>                  <br><span class="hljs-number">3</span> hosts <span class="hljs-keyword">in</span> cluster<br></code></pre></td></tr></table></figure>
+
+<p>当然，也可以通过查看WebUI观察ceph集群有多少个主机。</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/0f88adaa536d4c5b9d39d71a2aca5a66.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>5.移除主机【选做，如果你将来真有这个需求在操作】</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs coffeescript">[root@ceph141 ~]<span class="hljs-comment"># ceph orch host rm ceph143</span><br>Removed  host <span class="hljs-string">&#x27;ceph143&#x27;</span><br>[root@ceph141 ~]<span class="hljs-comment"># </span><br>[root@ceph141 ~]<span class="hljs-comment"># ceph orch host ls</span><br>HOST     ADDR        LABELS  STATUS  <br>ceph141  <span class="hljs-number">10.0</span><span class="hljs-number">.0</span><span class="hljs-number">.141</span>  _admin          <br>ceph142  <span class="hljs-number">10.0</span><span class="hljs-number">.0</span><span class="hljs-number">.142</span>                  <br><span class="hljs-number">2</span> hosts <span class="hljs-keyword">in</span> cluster<br></code></pre></td></tr></table></figure>
+
+<h2 id="三、添加OSD设备到ceph集群"><a href="#三、添加OSD设备到ceph集群" class="headerlink" title="三、添加OSD设备到ceph集群"></a>三、<strong>添加OSD设备到ceph集群</strong></h2><p>1.添加OSD之前环境查看</p>
+<p><strong>查看集群可用的设备</strong>【每个设备想要加入到集群，则其大小不得小于5GB】</p>
+<p>如果一个设备想要加入ceph集群，要求满足2个条件:</p>
+<p>1.设备未被使用;</p>
+<p>2.设备的存储大小必须大于5GB;</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs awk">[root@ceph141 ~]<span class="hljs-comment"># ceph orch device ls</span><br>HOST     PATH      TYPE  DEVICE ID                                             SIZE  AVAILABLE  REFRESHED  REJECT REASONS                               <br>ceph141  <span class="hljs-regexp">/dev/</span>sdc  hdd                                                         <span class="hljs-number">200</span>G  Yes        <span class="hljs-number">10</span>m ago                                                 <br>ceph141  <span class="hljs-regexp">/dev/</span>sr0  hdd   VMware_Virtual_SATA_CDRW_Drive_01000000000000000001  <span class="hljs-number">2006</span>M  No         <span class="hljs-number">10</span>m ago    Has a FileSystem, Insufficient space (&lt;<span class="hljs-number">5</span>GB)  <br>ceph142  <span class="hljs-regexp">/dev/</span>sdb  hdd                                                         <span class="hljs-number">100</span>G  Yes        <span class="hljs-number">4</span>m ago                                                  <br>ceph142  <span class="hljs-regexp">/dev/</span>sdc  hdd                                                         <span class="hljs-number">200</span>G  Yes        <span class="hljs-number">4</span>m ago                                                  <br>ceph142  <span class="hljs-regexp">/dev/</span>sr0  hdd   VMware_Virtual_SATA_CDRW_Drive_01000000000000000001  <span class="hljs-number">2006</span>M  No         <span class="hljs-number">4</span>m ago     Has a FileSystem, Insufficient space (&lt;<span class="hljs-number">5</span>GB)  <br>ceph143  <span class="hljs-regexp">/dev/</span>sdb  hdd                                                         <span class="hljs-number">100</span>G  Yes        <span class="hljs-number">3</span>m ago                                                  <br>ceph143  <span class="hljs-regexp">/dev/</span>sdc  hdd                                                         <span class="hljs-number">200</span>G  Yes        <span class="hljs-number">3</span>m ago                                                  <br>ceph143  <span class="hljs-regexp">/dev/</span>sr0  hdd   VMware_Virtual_SATA_CDRW_Drive_01000000000000000001  <span class="hljs-number">2006</span>M  No         <span class="hljs-number">3</span>m ago     Has a FileSystem, Insufficient space (&lt;<span class="hljs-number">5</span>GB)  <br></code></pre></td></tr></table></figure>
+
+<p><strong>查看各节点的空闲设备信息</strong></p>
+<figure class="highlight tap"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs tap">[root@ceph141 ~]<span class="hljs-comment"># lsblk</span><br>....<br>sdb                         8:16  <span class="hljs-number"> 0 </span> 200G <span class="hljs-number"> 0 </span>disk <br>sdc                         8:32  <span class="hljs-number"> 0 </span> 100G <span class="hljs-number"> 0 </span>disk <br>....<br><br>[root@ceph142 ~]<span class="hljs-comment"># lsblk </span><br>NAME                      MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS<br>...<br>sdb                         8:16  <span class="hljs-number"> 0 </span> 200G <span class="hljs-number"> 0 </span>disk <br>sdc                         8:32  <span class="hljs-number"> 0 </span> 100G <span class="hljs-number"> 0 </span>disk <br>...<br><br><br>[root@ceph143 ~]<span class="hljs-comment"># lsblk </span><br>NAME                      MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS<br>...<br>sdb                         8:16  <span class="hljs-number"> 0 </span> 200G <span class="hljs-number"> 0 </span>disk <br>sdc                         8:32  <span class="hljs-number"> 0 </span> 100G <span class="hljs-number"> 0 </span>disk<br></code></pre></td></tr></table></figure>
+
+<p><strong>查看OSD列表</strong></p>
+<figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs fortran">[root@ceph141 ~]# ceph osd tree<br>ID  <span class="hljs-keyword">CLASS</span>  WEIGHT  <span class="hljs-keyword">TYPE</span> <span class="hljs-keyword">NAME</span>     <span class="hljs-keyword">STATUS</span>  REWEIGHT  PRI-AFF<br>-<span class="hljs-number">1</span>              <span class="hljs-number">0</span>  root <span class="hljs-keyword">default</span> <br></code></pre></td></tr></table></figure>
+
+<p><strong>添加OSD设备到集群</strong></p>
+<p>此步骤会在”&#x2F;var&#x2F;lib&#x2F;ceph&#x2F;<Ceph_Cluster_ID>&#x2F;osd.<OSD_ID>&#x2F;fsid”文件中记录对应ceph的OSD编号对应本地的磁盘设备标识。</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs coffeescript">[root@ceph141 ~]<span class="hljs-comment"># ceph orch daemon add osd ceph141:/dev/sdb</span><br>Created osd(s) <span class="hljs-number">0</span> <span class="hljs-literal">on</span> host <span class="hljs-string">&#x27;ceph141&#x27;</span><br>[root@ceph141 ~]<span class="hljs-comment"># ceph orch daemon add osd ceph141:/dev/sdc</span><br>Created osd(s) <span class="hljs-number">1</span> <span class="hljs-literal">on</span> host <span class="hljs-string">&#x27;ceph141&#x27;</span><br>[root@ceph141 ~]<span class="hljs-comment"># ceph orch daemon add osd ceph142:/dev/sdb</span><br>Created osd(s) <span class="hljs-number">2</span> <span class="hljs-literal">on</span> host <span class="hljs-string">&#x27;ceph142&#x27;</span><br>[root@ceph141 ~]<span class="hljs-comment"># ceph orch daemon add osd ceph142:/dev/sdc</span><br>Created osd(s) <span class="hljs-number">3</span> <span class="hljs-literal">on</span> host <span class="hljs-string">&#x27;ceph142&#x27;</span><br>[root@ceph141 ~]<span class="hljs-comment"># ceph orch daemon add osd ceph143:/dev/sdb</span><br>Created osd(s) <span class="hljs-number">4</span> <span class="hljs-literal">on</span> host <span class="hljs-string">&#x27;ceph143&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<p> <strong>查看ceph节点的硬盘和OSD的对应关系</strong></p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs swift">[root<span class="hljs-meta">@ceph141</span> <span class="hljs-operator">~</span>]# ll <span class="hljs-operator">-</span>d  <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span><span class="hljs-operator">*/</span>osd<span class="hljs-operator">.*</span><br>drwx<span class="hljs-operator">------</span> <span class="hljs-number">2</span> <span class="hljs-number">167</span> <span class="hljs-number">167</span> <span class="hljs-number">4096</span> <span class="hljs-type">Jan</span> <span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">19</span> <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span>c153209c<span class="hljs-operator">-</span>d8a0<span class="hljs-operator">-</span>11ef<span class="hljs-operator">-</span>a0ed<span class="hljs-operator">-</span>bdb84668ed01<span class="hljs-regexp">/osd.0/</span><br>drwx<span class="hljs-operator">------</span> <span class="hljs-number">2</span> <span class="hljs-number">167</span> <span class="hljs-number">167</span> <span class="hljs-number">4096</span> <span class="hljs-type">Jan</span> <span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">19</span> <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span>c153209c<span class="hljs-operator">-</span>d8a0<span class="hljs-operator">-</span>11ef<span class="hljs-operator">-</span>a0ed<span class="hljs-operator">-</span>bdb84668ed01<span class="hljs-regexp">/osd.1/</span><br><br>[root<span class="hljs-meta">@ceph141</span> <span class="hljs-operator">~</span>]# cat <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span><span class="hljs-operator">*/</span>osd<span class="hljs-operator">.*/</span>fsid<br>1eb45f98<span class="hljs-operator">-</span><span class="hljs-number">6058</span><span class="hljs-operator">-</span>42f2<span class="hljs-operator">-</span>a5bf<span class="hljs-operator">-</span>b034e008ac9b<br>96e33e3d<span class="hljs-operator">-</span>0acc<span class="hljs-operator">-</span>43f5<span class="hljs-operator">-</span>bcee<span class="hljs-operator">-</span>204feb1582c7<br><br><br>[root<span class="hljs-meta">@ceph142</span> <span class="hljs-operator">~</span>]# ll <span class="hljs-operator">-</span>d  <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span><span class="hljs-operator">*/</span>osd<span class="hljs-operator">.*</span><br>drwx<span class="hljs-operator">------</span> <span class="hljs-number">2</span> <span class="hljs-number">167</span> <span class="hljs-number">167</span> <span class="hljs-number">4096</span> <span class="hljs-type">Jan</span> <span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">21</span> <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span>c153209c<span class="hljs-operator">-</span>d8a0<span class="hljs-operator">-</span>11ef<span class="hljs-operator">-</span>a0ed<span class="hljs-operator">-</span>bdb84668ed01<span class="hljs-regexp">/osd.2/</span><br>drwx<span class="hljs-operator">------</span> <span class="hljs-number">2</span> <span class="hljs-number">167</span> <span class="hljs-number">167</span> <span class="hljs-number">4096</span> <span class="hljs-type">Jan</span> <span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">21</span> <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span>c153209c<span class="hljs-operator">-</span>d8a0<span class="hljs-operator">-</span>11ef<span class="hljs-operator">-</span>a0ed<span class="hljs-operator">-</span>bdb84668ed01<span class="hljs-regexp">/osd.3/</span><br><br>[root<span class="hljs-meta">@ceph142</span> <span class="hljs-operator">~</span>]# cat <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span><span class="hljs-operator">*/</span>osd<span class="hljs-operator">.*/</span>fsid<br>3957c37c<span class="hljs-operator">-</span>c2fe<span class="hljs-operator">-</span><span class="hljs-number">4783</span><span class="hljs-operator">-</span>984e<span class="hljs-operator">-</span>93c1184b74a3<br>b8d5b119<span class="hljs-operator">-</span>c3e3<span class="hljs-operator">-</span>4e4e<span class="hljs-operator">-</span>aab5<span class="hljs-operator">-</span>85bea49ae3ef<br><br>[root<span class="hljs-meta">@ceph143</span> <span class="hljs-operator">~</span>]# ll <span class="hljs-operator">-</span>d  <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span><span class="hljs-operator">*/</span>osd<span class="hljs-operator">.*</span><br>drwx<span class="hljs-operator">------</span> <span class="hljs-number">2</span> <span class="hljs-number">167</span> <span class="hljs-number">167</span> <span class="hljs-number">4096</span> <span class="hljs-type">Jan</span> <span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">22</span> <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span>c153209c<span class="hljs-operator">-</span>d8a0<span class="hljs-operator">-</span>11ef<span class="hljs-operator">-</span>a0ed<span class="hljs-operator">-</span>bdb84668ed01<span class="hljs-regexp">/osd.4/</span><br>drwx<span class="hljs-operator">------</span> <span class="hljs-number">2</span> <span class="hljs-number">167</span> <span class="hljs-number">167</span> <span class="hljs-number">4096</span> <span class="hljs-type">Jan</span> <span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">27</span> <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span>c153209c<span class="hljs-operator">-</span>d8a0<span class="hljs-operator">-</span>11ef<span class="hljs-operator">-</span>a0ed<span class="hljs-operator">-</span>bdb84668ed01<span class="hljs-regexp">/osd.5/</span><br><br>[root<span class="hljs-meta">@ceph143</span> <span class="hljs-operator">~</span>]# cat <span class="hljs-regexp">/var/</span>lib<span class="hljs-regexp">/ceph/</span><span class="hljs-operator">*/</span>osd<span class="hljs-operator">.*/</span>fsid<br>e73be677<span class="hljs-operator">-</span>e55e<span class="hljs-operator">-</span>4b54<span class="hljs-operator">-</span>b007<span class="hljs-operator">-</span>a0ed5ba07316<br>2732dd29<span class="hljs-operator">-</span><span class="hljs-number">342e-4290</span><span class="hljs-operator">-</span>ba2b<span class="hljs-operator">-</span>1b56924339ec<br></code></pre></td></tr></table></figure>
+
+<p> <strong>不难发现，ceph底层是基于lvm技术磁盘的。</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/187d60c358e74fd989e12828ca90dba8.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>查看集群的osd总容量大小  </p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs dns">[root@ceph141 ~]# ceph osd tree<br>ID  CLASS  WEIGHT   TYPE NAME         STATUS  REWEIGHT  PRI-AFF<br>-<span class="hljs-number">1</span>         <span class="hljs-number">0.87895</span>  root default                               <br>-<span class="hljs-number">3</span>         <span class="hljs-number">0.29298</span>      host ceph141                           <br> <span class="hljs-number">0</span>    hdd  <span class="hljs-number">0.19530</span>          osd.<span class="hljs-number">0</span>         up   <span class="hljs-number">1.00000</span>  <span class="hljs-number">1.00000</span><br> <span class="hljs-number">1</span>    hdd  <span class="hljs-number">0.09769</span>          osd.<span class="hljs-number">1</span>         up   <span class="hljs-number">1.00000</span>  <span class="hljs-number">1.00000</span><br>-<span class="hljs-number">5</span>         <span class="hljs-number">0.29298</span>      host ceph142                           <br> <span class="hljs-number">2</span>    hdd  <span class="hljs-number">0.09769</span>          osd.<span class="hljs-number">2</span>         up   <span class="hljs-number">1.00000</span>  <span class="hljs-number">1.00000</span><br> <span class="hljs-number">3</span>    hdd  <span class="hljs-number">0.19530</span>          osd.<span class="hljs-number">3</span>         up   <span class="hljs-number">1.00000</span>  <span class="hljs-number">1.00000</span><br>-<span class="hljs-number">7</span>         <span class="hljs-number">0.29298</span>      host ceph143                           <br> <span class="hljs-number">4</span>    hdd  <span class="hljs-number">0.09769</span>          osd.<span class="hljs-number">4</span>         up   <span class="hljs-number">1.00000</span>  <span class="hljs-number">1.00000</span><br> <span class="hljs-number">5</span>    hdd  <span class="hljs-number">0.19530</span>          osd.<span class="hljs-number">5</span>         up   <span class="hljs-number">1.00000</span>  <span class="hljs-number">1.00000</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>查看集群大小</strong>  </p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs nix">[root@ceph141 ~]<span class="hljs-comment"># ceph -s</span><br>  <span class="hljs-params">cluster:</span><br>    <span class="hljs-params">id:</span>     c153209c-d8a0-<span class="hljs-number">11</span>ef-a0ed-bdb84668ed01<br>    <span class="hljs-params">health:</span> HEALTH_WARN<br>            mon ceph141 is low on available space<br> <br>  <span class="hljs-params">services:</span><br>    <span class="hljs-params">mon:</span> <span class="hljs-number">3</span> daemons, quorum ceph141,ceph142,ceph143 (age <span class="hljs-number">26</span>m)<br>    <span class="hljs-params">mgr:</span> ceph141.iphxbv(active, since <span class="hljs-number">26</span>m), <span class="hljs-params">standbys:</span> ceph142.mxilbz<br>    <span class="hljs-params">osd:</span> <span class="hljs-number">6</span> <span class="hljs-params">osds:</span> <span class="hljs-number">6</span> up (since <span class="hljs-number">13</span>m), <span class="hljs-number">6</span> <span class="hljs-keyword">in</span> (since <span class="hljs-number">13</span>m)<br> <br>  <span class="hljs-params">data:</span><br>    <span class="hljs-params">pools:</span>   <span class="hljs-number">1</span> pools, <span class="hljs-number">1</span> pgs<br>    <span class="hljs-params">objects:</span> <span class="hljs-number">2</span> objects, <span class="hljs-number">449</span> KiB<br>    <span class="hljs-params">usage:</span>   <span class="hljs-number">161</span> MiB used, <span class="hljs-number">900</span> GiB <span class="hljs-symbol">/</span> <span class="hljs-number">900</span> GiB avail   <span class="hljs-comment">#这里是集群总大小</span><br>    <span class="hljs-params">pgs:</span>     <span class="hljs-number">1</span> active<span class="hljs-operator">+</span>clean<br></code></pre></td></tr></table></figure>
+
+<p> <strong>dashbord查看</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/0c976ae7fdbf4a8597b4f0bac742eeb5.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><strong>ceph集群基于chrony进行同步时间</strong></p>
+<p><strong>存在的问题</strong></p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs nix">[root@ceph141 ~]<span class="hljs-comment"># ceph -s</span><br>  <span class="hljs-params">cluster:</span><br>    <span class="hljs-params">id:</span>     c153209c-d8a0-<span class="hljs-number">11</span>ef-a0ed-bdb84668ed01<br>    <span class="hljs-params">health:</span> HEALTH_WARN<br>            clock skew detected on mon.ceph142<br> <br>  <span class="hljs-params">services:</span><br>    <span class="hljs-params">mon:</span> <span class="hljs-number">3</span> daemons, quorum ceph141,ceph142,ceph143 (age <span class="hljs-number">8</span>m)<br>    <span class="hljs-params">mgr:</span> ceph141.iphxbv(active, since <span class="hljs-number">8</span>m), <span class="hljs-params">standbys:</span> ceph142.mxilbz<br>    <span class="hljs-params">osd:</span> <span class="hljs-number">6</span> <span class="hljs-params">osds:</span> <span class="hljs-number">6</span> up (since <span class="hljs-number">8</span>m), <span class="hljs-number">6</span> <span class="hljs-keyword">in</span> (since <span class="hljs-number">112</span>m)<br> <br>  <span class="hljs-params">data:</span><br>    <span class="hljs-params">pools:</span>   <span class="hljs-number">1</span> pools, <span class="hljs-number">1</span> pgs<br>    <span class="hljs-params">objects:</span> <span class="hljs-number">2</span> objects, <span class="hljs-number">449</span> KiB<br>    <span class="hljs-params">usage:</span>   <span class="hljs-number">575</span> MiB used, <span class="hljs-number">899</span> GiB <span class="hljs-symbol">/</span> <span class="hljs-number">900</span> GiB avail<br>    <span class="hljs-params">pgs:</span>     <span class="hljs-number">1</span> active<span class="hljs-operator">+</span>clean<br></code></pre></td></tr></table></figure>
+
+<p><strong>所有节点安装服务</strong></p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cmake">apt -y <span class="hljs-keyword">install</span> chrony <br></code></pre></td></tr></table></figure>
+
+<p> <strong>ceph141修改配置</strong></p>
+<p> <strong>修改配置</strong></p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ebnf"><span class="hljs-attribute">systemctl restart chronyd</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>查看配置是否生效</strong></p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs autoit">[root<span class="hljs-symbol">@ceph142</span> ~]<span class="hljs-meta"># chronyc activity -v</span><br><span class="hljs-number">200</span> OK<br><span class="hljs-number">1</span> sources online<br><span class="hljs-number">0</span> sources offline<br><span class="hljs-number">0</span> sources doing burst (<span class="hljs-keyword">return</span> <span class="hljs-keyword">to</span> online)<br><span class="hljs-number">0</span> sources doing burst (<span class="hljs-keyword">return</span> <span class="hljs-keyword">to</span> offline)<br><span class="hljs-number">7</span> sources <span class="hljs-keyword">with</span> unknown address<br></code></pre></td></tr></table></figure>
+
+<p><strong>再次查看集群</strong></p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs nix">[root@ceph141 ~]<span class="hljs-comment"># ceph -s</span><br>  <span class="hljs-params">cluster:</span><br>    <span class="hljs-params">id:</span>     c153209c-d8a0-<span class="hljs-number">11</span>ef-a0ed-bdb84668ed01<br>    <span class="hljs-params">health:</span> HEALTH_OK<br> <br>  <span class="hljs-params">services:</span><br>    <span class="hljs-params">mon:</span> <span class="hljs-number">3</span> daemons, quorum ceph141,ceph142,ceph143 (age <span class="hljs-number">8</span>m)<br>    <span class="hljs-params">mgr:</span> ceph141.iphxbv(active, since <span class="hljs-number">8</span>m), <span class="hljs-params">standbys:</span> ceph142.mxilbz<br>    <span class="hljs-params">osd:</span> <span class="hljs-number">6</span> <span class="hljs-params">osds:</span> <span class="hljs-number">6</span> up (since <span class="hljs-number">8</span>m), <span class="hljs-number">6</span> <span class="hljs-keyword">in</span> (since <span class="hljs-number">112</span>m)<br> <br>  <span class="hljs-params">data:</span><br>    <span class="hljs-params">pools:</span>   <span class="hljs-number">1</span> pools, <span class="hljs-number">1</span> pgs<br>    <span class="hljs-params">objects:</span> <span class="hljs-number">2</span> objects, <span class="hljs-number">449</span> KiB<br>    <span class="hljs-params">usage:</span>   <span class="hljs-number">575</span> MiB used, <span class="hljs-number">899</span> GiB <span class="hljs-symbol">/</span> <span class="hljs-number">900</span> GiB avail<br>    <span class="hljs-params">pgs:</span>     <span class="hljs-number">1</span> active<span class="hljs-operator">+</span>clean<br></code></pre></td></tr></table></figure>
+
+<h2 id="四、ceph的管理节点配置"><a href="#四、ceph的管理节点配置" class="headerlink" title="四、ceph的管理节点配置"></a>四、ceph的管理节点配置</h2><p><strong>拷贝apt源及认证文件</strong></p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">[root@ceph141 ~]# scp  /etc/apt/sources.list.d/ceph.list ceph142:/etc/apt/sources.list.d/<br>[root@ceph141 ~]# scp /etc/apt/<span class="hljs-keyword">trusted</span>.gpg.d/ceph.<span class="hljs-keyword">release</span>.gpg  ceph142:/etc/apt/<span class="hljs-keyword">trusted</span>.gpg.d/<br></code></pre></td></tr></table></figure>
+
+<p><strong>客户端更新源并安装客户端节点ceph客户端软件包</strong></p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs coffeescript">[root@ceph142 ~]<span class="hljs-comment"># ll /etc/apt/trusted.gpg.d/ceph.release.gpg </span><br>-rw-r--r-- <span class="hljs-number">1</span> root root <span class="hljs-number">1143</span> Aug <span class="hljs-number">21</span> <span class="hljs-number">16</span>:<span class="hljs-number">35</span> /etc/apt/trusted.gpg.d/ceph.release.gpg<br>[root@ceph142 ~]<span class="hljs-comment"># </span><br>[root@ceph142 ~]<span class="hljs-comment"># ll /etc/apt/sources.list.d/ceph.list </span><br>-rw-r--r-- <span class="hljs-number">1</span> root root <span class="hljs-number">54</span> Aug <span class="hljs-number">21</span> <span class="hljs-number">16</span>:<span class="hljs-number">33</span> /etc/apt/sources.list.d/ceph.list<br>[root@ceph142 ~]<span class="hljs-comment"># </span><br>[root@ceph142 ~]<span class="hljs-comment"># apt update</span><br>[root@ceph142 ~]<span class="hljs-comment"># </span><br>[root@ceph142 ~]<span class="hljs-comment"># apt -y install ceph-common</span><br>[root@ceph142 ~]<span class="hljs-comment"># </span><br>[root@ceph142 ~]<span class="hljs-comment"># ceph -v</span><br>ceph version <span class="hljs-number">18.2</span><span class="hljs-number">.4</span> (e7ad5345525c7aa95470c26863873b581076945d) reef (stable)<br>[root@ceph142 ~]<span class="hljs-comment"># </span><br>[root@ceph142 ~]<span class="hljs-comment"># ll /etc/ceph/</span><br>total <span class="hljs-number">12</span><br>drwxr-xr-x   <span class="hljs-number">2</span> root root <span class="hljs-number">4096</span> Aug <span class="hljs-number">21</span> <span class="hljs-number">16</span>:<span class="hljs-number">37</span> ./<br>drwxr-xr-x <span class="hljs-number">101</span> root root <span class="hljs-number">4096</span> Aug <span class="hljs-number">21</span> <span class="hljs-number">16</span>:<span class="hljs-number">37</span> ../<br>-rw-r--r--   <span class="hljs-number">1</span> root root   <span class="hljs-number">92</span> Jul <span class="hljs-number">12</span> <span class="hljs-number">23</span>:<span class="hljs-number">42</span> rbdmap<br>[root@ceph142 ~]<span class="hljs-comment"># </span><br>[root@ceph142 ~]<span class="hljs-comment"># ceph -s  # 很明显，此节点的ceph管理ceph集群</span><br><span class="hljs-built_in">Error</span> initializing cluster client: ObjectNotFound(<span class="hljs-string">&#x27;RADOS object not found (error calling conf_read_file)&#x27;</span>)<br></code></pre></td></tr></table></figure>
+
+<p><strong>ceph141节点拷贝认证文件到ceph142节点</strong></p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs swift">[root<span class="hljs-meta">@ceph141</span> <span class="hljs-operator">~</span>]# scp <span class="hljs-regexp">/etc/</span>ceph<span class="hljs-regexp">/ceph.&#123;conf,client.admin.keyring&#125; ceph142:/</span>etc<span class="hljs-regexp">/ceph/</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>ceph142节点测试</strong></p>
+<figure class="highlight tap"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs tap">[root@ceph142 ~]<span class="hljs-comment"># ll /etc/ceph/</span><br>total 20<br>drwxr-xr-x  <span class="hljs-number"> 2 </span>root root<span class="hljs-number"> 4096 </span>Aug<span class="hljs-number"> 21 </span>16:40 ./<br>drwxr-xr-x<span class="hljs-number"> 101 </span>root root<span class="hljs-number"> 4096 </span>Aug<span class="hljs-number"> 21 </span>16:37 ../<br>-rw-------  <span class="hljs-number"> 1 </span>root root <span class="hljs-number"> 151 </span>Aug<span class="hljs-number"> 21 </span>16:40 ceph.client.admin.keyring<br>-rw-r--r--  <span class="hljs-number"> 1 </span>root root <span class="hljs-number"> 259 </span>Aug<span class="hljs-number"> 21 </span>16:40 ceph.conf<br>-rw-r--r--  <span class="hljs-number"> 1 </span>root root  <span class="hljs-number"> 92 </span>Jul<span class="hljs-number"> 12 </span>23:42 rbdmap<br><br>[root@ceph142 ~]<span class="hljs-comment"># ceph -s</span><br>  cluster:<br>    id:     c153209c-d8a0-11ef-a0ed-bdb84668ed01<br>    health: HEALTH_OK<br> <br>  services:<br>    mon:<span class="hljs-number"> 3 </span>daemons, quorum ceph141,ceph142,ceph143 (age 21m)<br>    mgr: ceph141.iphxbv(active, since 21m), standbys: ceph142.mxilbz<br>    osd:<span class="hljs-number"> 6 </span>osds:<span class="hljs-number"> 6 </span>up (since 21m),<span class="hljs-number"> 6 </span>in (since 2h)<br> <br>  data:<br>    pools:  <span class="hljs-number"> 1 </span>pools,<span class="hljs-number"> 1 </span>pgs<br>    objects:<span class="hljs-number"> 2 </span>objects,<span class="hljs-number"> 449 </span>KiB<br>    usage:  <span class="hljs-number"> 575 </span>MiB used,<span class="hljs-number"> 899 </span>GiB /<span class="hljs-number"> 900 </span>GiB avail<br>    pgs:    <span class="hljs-number"> 1 </span>active+clean<br></code></pre></td></tr></table></figure>
+
+<h2 id="五、标签管理"><a href="#五、标签管理" class="headerlink" title="五、标签管理"></a>五、标签管理</h2><p>一般情况下，管理节点，我们都会为节点打上对应的标签，以便于日后工作交接</p>
+<p><strong>添加标签</strong></p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs llvm">[root<span class="hljs-title">@ceph141</span> ~]# ceph orch host <span class="hljs-type">label</span> <span class="hljs-keyword">add</span> ceph<span class="hljs-number">142</span> _admin<br>Added <span class="hljs-type">label</span> _admin <span class="hljs-keyword">to</span> host ceph<span class="hljs-number">142</span><br>[root<span class="hljs-title">@ceph141</span> ~]# ceph orch host <span class="hljs-type">label</span> <span class="hljs-keyword">add</span> ceph<span class="hljs-number">143</span> _admin<br>Added <span class="hljs-type">label</span> _admin <span class="hljs-keyword">to</span> host ceph<span class="hljs-number">143</span><br>[root<span class="hljs-title">@ceph141</span> ~]# ceph orch host <span class="hljs-type">label</span> <span class="hljs-keyword">add</span> ceph<span class="hljs-number">143</span> cherry<br>Added <span class="hljs-type">label</span> cherry <span class="hljs-keyword">to</span> host ceph<span class="hljs-number">143</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/f310cf021830485da4cfcc35be26b243.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><strong>移除标签</strong></p>
+<figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs livescript">[root@ceph141 ~]<span class="hljs-comment"># ceph orch host label rm ceph143 cherry </span><br>Removed label oldboyedu <span class="hljs-keyword">from</span> host ceph143<br>[root@ceph141 ~]<span class="hljs-comment"># ceph orch host label rm ceph143 _admin</span><br>Host ceph143 does <span class="hljs-keyword">not</span> have label <span class="hljs-string">&#x27;admin&#x27;</span>. Please use <span class="hljs-string">&#x27;ceph orch host ls&#x27;</span> <span class="hljs-keyword">to</span> <span class="hljs-keyword">list</span> all the labels.<br>[root@ceph141 ~]<span class="hljs-comment"># ceph orch host label rm ceph143 _admin</span><br>Removed label _admin <span class="hljs-keyword">from</span> host ceph143<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/d8b564855fed4e15ac0e0b28691971d6.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AD%98%E5%82%A8%E7%AF%87/" class="category-chain-item">存储篇</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Ceph/" class="print-no-link">#Ceph</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>ceph新增节点，OSD设备，标签管理（二）</div>
+      <div>http://example.com/2025/04/18/ceph新增节点，OSD设备，标签管理（二）/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>淡黄的cherry</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/18/k8s%E9%9B%86%E6%88%90MinIo/" title="k8s集成MinIo">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">k8s集成MinIo</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/18/ceph%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%EF%BC%8C%E6%9E%B6%E6%9E%84%EF%BC%8C%E9%83%A8%E7%BD%B2%EF%BC%88%E4%B8%80%EF%BC%89/" title="ceph基本概念，架构，部署（一）">
+                        <span class="hidden-mobile">ceph基本概念，架构，部署（一）</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  <div>
+    <span id="timeDate">正在载入天数...</span>
+    <span id="times">载入时分秒...</span>
+    <script>
+    var now = new Date();
+    function createtime(){
+        var grt= new Date("08/17/2020 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24;
+        dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum);
+        hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){
+            hnum = "0" + hnum;
+        }
+        minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes);
+        if(String(mnum).length ==1 ){
+                  mnum = "0" + mnum;
+        }
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds);
+        if(String(snum).length ==1 ){
+                  snum = "0" + snum;
+        }
+        document.getElementById("timeDate").innerHTML = "🚀已持续航行&nbsp"+dnum+"&nbsp天";  
+        document.getElementById("times").innerHTML = hnum + "&nbsp时&nbsp" + mnum + "&nbsp分&nbsp" + snum + "&nbsp秒";
+    }
+    setInterval("createtime()",250);
+    </script>
+  </div>
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom.js"></script>
+<script src="/js/snow.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,768 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/2.png">
+  <link rel="icon" href="/img/2.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="淡黄的cherry">
+  <meta name="keywords" content="">
+  <meta name="referrer" content="no-referrer">
+  
+    <meta name="description" content="本篇文章分享一下在 k8s怎么集成 minio做存储，并实现 PersistentVolume (PV)、PersistentVolumeClaim (PVC)、动态存储卷StorageClass，以及演示让pod使用这些存储卷的完整流程。 一、理论1、PV概念PV是对K8S存储资源的抽象，PV一般由运维人员创建和配置，供容器申请使用。 没有PV之前，服务器的磁盘没有分区的概念，有了PV之后，相">
+<meta property="og:type" content="article">
+<meta property="og:title" content="k8s集成MinIo">
+<meta property="og:url" content="http://example.com/2025/04/18/k8s%E9%9B%86%E6%88%90MinIo/index.html">
+<meta property="og:site_name" content="cherry">
+<meta property="og:description" content="本篇文章分享一下在 k8s怎么集成 minio做存储，并实现 PersistentVolume (PV)、PersistentVolumeClaim (PVC)、动态存储卷StorageClass，以及演示让pod使用这些存储卷的完整流程。 一、理论1、PV概念PV是对K8S存储资源的抽象，PV一般由运维人员创建和配置，供容器申请使用。 没有PV之前，服务器的磁盘没有分区的概念，有了PV之后，相">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/96f7b4369f9c4d3db6f70e391bd391fb.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/d99c83c9e3b54dbe9715249bf668cba2.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/56830496c9b84e6c8ed0b49c37b734bb.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/4e28afc200f2413687d45a788078a5ae.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/637c135105f44604ac8ba1c2ff526070.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/5b7bb21d10a946bbbb18cfc0f6014bb7.png">
+<meta property="article:published_time" content="2025-04-18T03:25:01.000Z">
+<meta property="article:modified_time" content="2025-04-18T03:29:53.747Z">
+<meta property="article:author" content="淡黄的cherry">
+<meta property="article:tag" content="k8s">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/96f7b4369f9c4d3db6f70e391bd391fb.png">
+  
+  
+  
+  <title>k8s集成MinIo - cherry</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/macpanel.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong class="navbar-title">cherryの技术文档</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="k8s集成MinIo"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-18 11:25" pubdate>
+          2025年4月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          14 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">k8s集成MinIo</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p> 本篇文章分享一下在 k8s怎么集成 minio做存储，并实现 <code>PersistentVolume (PV)</code>、<code>PersistentVolumeClaim (PVC)</code>、动态存储卷<code>StorageClass</code>，以及演示让pod使用这些存储卷的完整流程。</p>
+<h1 id="一、理论"><a href="#一、理论" class="headerlink" title="一、理论"></a>一、理论</h1><h3 id="1、PV概念"><a href="#1、PV概念" class="headerlink" title="1、PV概念"></a>1、PV概念</h3><p>PV是对K8S存储资源的抽象，PV一般由运维人员创建和配置，供容器申请使用。</p>
+<p>没有PV之前，服务器的磁盘没有分区的概念，有了PV之后，相当于通过PV对服务器的磁盘进行分区。</p>
+<h3 id="2、PVC概念"><a href="#2、PVC概念" class="headerlink" title="2、PVC概念"></a>2、PVC概念</h3><p>PVC 是Pod对存储资源的一个申请，主要包括存储空间申请、访问模式等。创建PV后，Pod就可以通过PVC向PV申请磁盘空间了。类似于某个应用程序向<code>操作系统的D盘</code>申请1G的使用空间。</p>
+<p>PVC 创建成功之后，Pod 就可以以存储卷（Volume）的方式使用 PVC 的存储资源了。Pod 在使用 PVC 时必须与PVC在同一个Namespace下。</p>
+<h3 id="3、PV-PVC的关系"><a href="#3、PV-PVC的关系" class="headerlink" title="3、PV &#x2F; PVC的关系"></a>3、PV &#x2F; PVC的关系</h3><p>PV相当于对磁盘的分区，PVC相当于APP（应用程序）向某个分区申请多少空间。比如说安装WPS程序时，一般会告知我们安装它需要多少存储空间，让你选择在某个磁盘下安装。如果将来某个分区磁盘满了，也不会影响别的分区磁盘的使用。</p>
+<p>一旦 PV 与PVC绑定，Pod就可以使用这个 PVC 了。如果在系统中没有满足 PVC 要求的 PV，PVC则一直处于 Pending 状态，直到系统里产生了一个合适的 PV。</p>
+<h3 id="4、StorageClass概念"><a href="#4、StorageClass概念" class="headerlink" title="4、StorageClass概念"></a>4、StorageClass概念</h3><p>K8S有两种存储资源的供应模式：静态模式和动态模式，资源供应的最终目的就是将适合的PV与PVC绑定：</p>
+<ul>
+<li>静态模式：管理员预先创建许多各种各样的PV，等待PVC申请使用。</li>
+<li>动态模式：管理员无须预先创建PV，而是通过StorageClass自动完成PV的创建以及与PVC的绑定。</li>
+</ul>
+<p>StorageClass就是动态模式，根据PVC的需求动态创建合适的PV资源，从而实现存储卷的按需创建。</p>
+<p>一般某个商业性的应用程序，会用到大量的Pod，如果每个Pod都需要使用存储资源，那么就需要人工时不时的去创建PV，这也是个麻烦事儿。解决方法就是使用动态模式：当Pod通过PVC申请存储资源时，直接通过StorageClass去动态的创建对应大小的PV，然后与PVC绑定，所以基本上PV → PVC是一对一的关系。</p>
+<h1 id="二、pod数据存储流程"><a href="#二、pod数据存储流程" class="headerlink" title="二、pod数据存储流程"></a>二、pod数据存储流程</h1><p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/96f7b4369f9c4d3db6f70e391bd391fb.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h1 id="三、部署minio"><a href="#三、部署minio" class="headerlink" title="三、部署minio"></a>三、部署minio</h1><p>官方文档：<a target="_blank" rel="noopener" href="https://min.io/download?view=aistor-custom">MinIO | Code and downloads to create high performance object storage</a></p>
+<p><strong>下载minio</strong></p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs autoit"><span class="hljs-meta"># 下载服务端</span><br>[root<span class="hljs-symbol">@minio</span> opt]<span class="hljs-meta"># wget https://dl.min.io/server/minio/release/linux-amd64/minio</span><br><span class="hljs-meta"># 将下载所得minio文件拷贝到指定文件夹并赋权</span><br>[root<span class="hljs-symbol">@minio</span> opt]<span class="hljs-meta"># cp minio /usr/local/bin/</span><br>[root<span class="hljs-symbol">@minio</span> opt]<span class="hljs-meta"># chmod +x /usr/local/bin/minio</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>为MinIO创建一个存储目录：</strong></p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs autoit">[root<span class="hljs-symbol">@minio</span> opt]<span class="hljs-meta"># mkdir /data</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>启动MinIO，并指定存储目录和访问地址：</strong></p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">[root@minio opt]# minio <span class="hljs-keyword">server</span> /data <span class="hljs-comment">--console-address &quot;:9099&quot;</span><br><span class="hljs-keyword">INFO</span>: Formatting <span class="hljs-number">1</span>st pool, <span class="hljs-number">1</span> <span class="hljs-keyword">set</span>(s), <span class="hljs-number">1</span> drives per <span class="hljs-keyword">set</span>.<br><span class="hljs-keyword">INFO</span>: <span class="hljs-built_in">WARNING</span>: Host <span class="hljs-keyword">local</span> has more than <span class="hljs-number">0</span> drives <span class="hljs-keyword">of</span> <span class="hljs-keyword">set</span>. A host failure will result <span class="hljs-keyword">in</span> data becoming unavailable.<br>MinIO <span class="hljs-keyword">Object</span> <span class="hljs-keyword">Storage</span> <span class="hljs-keyword">Server</span><br>Copyright: <span class="hljs-number">2015</span><span class="hljs-number">-2025</span> MinIO, Inc.<br>License: GNU AGPLv3 - https://www.gnu.org/licenses/agpl<span class="hljs-number">-3.0</span>.html<br><span class="hljs-keyword">Version</span>: <span class="hljs-keyword">RELEASE</span><span class="hljs-number">.2025</span><span class="hljs-number">-01</span><span class="hljs-number">-18</span>T00<span class="hljs-number">-31</span><span class="hljs-number">-37</span>Z (go1<span class="hljs-number">.23</span><span class="hljs-number">.5</span> linux/amd64)<br><br>API: http://<span class="hljs-number">10.0</span><span class="hljs-number">.0</span><span class="hljs-number">.12</span>:<span class="hljs-number">9000</span>  http://<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">9000</span> <br>   RootUser: minioadmin <br>   RootPass: minioadmin <br><br>WebUI: http://<span class="hljs-number">10.0</span><span class="hljs-number">.0</span><span class="hljs-number">.12</span>:<span class="hljs-number">9099</span> http://<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">9099</span>   <br>   RootUser: minioadmin <br>   RootPass: minioadmin <br><br>CLI: https://min.io/docs/minio/linux/reference/minio-mc.html#quickstart<br>   $ mc <span class="hljs-keyword">alias</span> <span class="hljs-keyword">set</span> <span class="hljs-string">&#x27;myminio&#x27;</span> <span class="hljs-string">&#x27;http://10.0.0.12:9000&#x27;</span> <span class="hljs-string">&#x27;minioadmin&#x27;</span> <span class="hljs-string">&#x27;minioadmin&#x27;</span><br><br>Docs: https://docs.min.io<br>WARN: Detected <span class="hljs-keyword">default</span> credentials <span class="hljs-string">&#x27;minioadmin:minioadmin&#x27;</span>, we recommend that you change these <span class="hljs-keyword">values</span> <span class="hljs-keyword">with</span> <span class="hljs-string">&#x27;MINIO_ROOT_USER&#x27;</span> <span class="hljs-keyword">and</span> <span class="hljs-string">&#x27;MINIO_ROOT_PASSWORD&#x27;</span> environment variables<br></code></pre></td></tr></table></figure>
+
+<p>其中 <code>/data</code> 是用于存储 MinIO 数据的目录，<code>--console-address &quot;:9099&quot;</code> 是指定 MinIO Web 控制台的监听地址为端口 <code>9099</code>。</p>
+<h3 id="1-访问"><a href="#1-访问" class="headerlink" title="1.访问"></a><strong>1.访问</strong></h3><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs dts"><span class="hljs-symbol">http:</span><span class="hljs-comment">//10.0.0.12:9099</span><br>账号：minioadmin <br>密码：minioadmin<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/d99c83c9e3b54dbe9715249bf668cba2.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h3 id="2-配置自启动服务"><a href="#2-配置自启动服务" class="headerlink" title="2.配置自启动服务"></a>2.配置自启动服务</h3><p>为简化MinIO配置，我们可将MinIO的配置统一写入一个配置文件，以供启动时调用。配置方式如下：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-section">[root@minio ~]</span><span class="hljs-comment"># vim /etc/default/minio</span><br><span class="hljs-comment"># 指定数据存储目录(注意：这个目录要存在且拥有相对应的权限)</span><br><span class="hljs-attr">MINIO_VOLUMES</span>=<span class="hljs-string">&quot;/data&quot;</span><br><br><span class="hljs-comment"># 监听端口</span><br><span class="hljs-attr">MINIO_OPTS</span>=<span class="hljs-string">&quot;--address :9000 --console-address :9099&quot;</span><br><br><span class="hljs-comment"># 老版本使用MINIO_ACCESS_KEY/MINIO_SECRET_KEY，新版本已不建议使用</span><br><span class="hljs-comment"># Access key (账号)</span><br><span class="hljs-comment"># MINIO_ACCESS_KEY=&quot;minioadmin&quot;</span><br><span class="hljs-comment"># Secret key (密码)</span><br><span class="hljs-comment"># MINIO_SECRET_KEY=&quot;minioadmin&quot;</span><br><br><span class="hljs-comment"># 新版本使用；指定默认的用户名和密码，其中用户名必须大于3个字母，否则不能启动</span><br><span class="hljs-attr">MINIO_ROOT_USER</span>=<span class="hljs-string">&quot;minioadmin&quot;</span><br><span class="hljs-attr">MINIO_ROOT_PASSWORD</span>=<span class="hljs-string">&quot;minioadmin666&quot;</span><br><br><span class="hljs-comment"># 区域值，标准格式是“国家-区域-编号”，</span><br><span class="hljs-attr">MINIO_REGION</span>=<span class="hljs-string">&quot;cn-north-1&quot;</span><br><br><span class="hljs-comment"># 域名</span><br><span class="hljs-comment"># MINIO_DOMAIN=minio.your_domain.com</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="3-编写服务文件"><a href="#3-编写服务文件" class="headerlink" title="3.编写服务文件"></a>3.编写服务文件</h3><p>创建minio.service服务文件，并写入配置信息：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-section">[root@minio ~]</span><span class="hljs-comment"># vim /usr/lib/systemd/system/minio.service</span><br><span class="hljs-section">[Unit]</span><br><span class="hljs-attr">Description</span>=MinIO<br><span class="hljs-attr">Documentation</span>=https://docs.min.io<br><span class="hljs-attr">Wants</span>=network-<span class="hljs-literal">on</span>line.target<br><span class="hljs-attr">After</span>=network-<span class="hljs-literal">on</span>line.target<br><span class="hljs-attr">AssertFileIsExecutable</span>=/usr/local/bin/minio<br><span class="hljs-section">[Service]</span><br><span class="hljs-attr">WorkingDirectory</span>=/usr/local/<br><br><span class="hljs-attr">ProtectProc</span>=invisible<br><br><span class="hljs-comment"># 指向3.1节中的配置文件</span><br><span class="hljs-comment">#EnvironmentFile=/etc/default/minio</span><br><span class="hljs-attr">EnvironmentFile</span>=-/etc/default/minio<br><br><span class="hljs-attr">ExecStartPre</span>=/bin/bash -c <span class="hljs-string">&quot;if [ -z \&quot;$&#123;MINIO_VOLUMES&#125;\&quot; ]; then echo \&quot;Variable MINIO_VOLUMES not set in /etc/default/minio\&quot;; exit 1; fi&quot;</span><br><span class="hljs-attr">ExecStart</span>=/usr/local/bin/minio server <span class="hljs-variable">$MINIO_OPTS</span> <span class="hljs-variable">$MINIO_VOLUMES</span><br><br><span class="hljs-comment"># Let systemd restart this service always</span><br><span class="hljs-attr">Restart</span>=always<br><br><span class="hljs-comment"># Specifies the maximum (1M) file descriptor number that can be opened by this process</span><br><span class="hljs-attr">LimitNOFILE</span>=<span class="hljs-number">1048576</span><br><br><span class="hljs-comment"># Specifies the maximum number of threads this process can create</span><br><span class="hljs-attr">TasksMax</span>=infinity<br><br><span class="hljs-comment"># Disable timeout logic and wait until process is stopped</span><br><span class="hljs-attr">TimeoutStopSec</span>=infinity<br><span class="hljs-attr">SendSIGKILL</span>=<span class="hljs-literal">no</span><br><span class="hljs-attr">SuccessExitStatus</span>=<span class="hljs-number">0</span><br><br><span class="hljs-section">[Install]</span><br><span class="hljs-attr">WantedBy</span>=multi-user.target<br><span class="hljs-attr">Alias</span>=minio.service<br></code></pre></td></tr></table></figure>
+
+<p><strong>使服务生效</strong></p>
+<p>通过systemctl将服务生效并启动服务。</p>
+<figure class="highlight nsis"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs nsis"><span class="hljs-comment"># 重新加载服务配置文件，使服务生效</span><br><span class="hljs-params">system</span>ctl daemon-reload<br><br><span class="hljs-comment"># 将服务设置为开机启动</span><br><span class="hljs-params">system</span>ctl enable minio<br><br><span class="hljs-comment"># 服务立即启动</span><br><span class="hljs-params">system</span>ctl start minio<br><br><span class="hljs-comment"># 查看minio服务当前状态</span><br><span class="hljs-params">system</span>ctl status minio<br></code></pre></td></tr></table></figure>
+
+<p>重新登录</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs dts"><span class="hljs-symbol">http:</span><span class="hljs-comment">//10.0.0.12:9099</span><br>账号：minioadmin <br>密码：minioadmin666<br></code></pre></td></tr></table></figure>
+
+<p>如果起不来可以查看日志排查</p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs autoit">[root<span class="hljs-symbol">@minio</span> ~]<span class="hljs-meta"># journalctl -u minio -f </span><br></code></pre></td></tr></table></figure>
+
+<h1 id="四、minio集成k8s"><a href="#四、minio集成k8s" class="headerlink" title="四、minio集成k8s"></a>四、minio集成k8s</h1><p>MinIO控制台提供了一个图形用户界面（GUI），用于与MinIO租户进行交互。默认情况下，MinIO操作员为每个租户安装和配置控制台。</p>
+<p>参考地址：<a target="_blank" rel="noopener" href="https://github.com/yandex-cloud/k8s-csi-s3">https://github.com/yandex-cloud/k8s-csi-s3</a></p>
+<p>下载资源包</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs crystal">[root<span class="hljs-variable">@master231</span> kubernetes]<span class="hljs-comment"># pwd </span><br><span class="hljs-regexp">/opt/k</span>8s-csi-s3-<span class="hljs-number">0.35</span>.<span class="hljs-number">5</span>/deploy/kubernetes<br><br>[root<span class="hljs-variable">@master231</span> kubernetes]<span class="hljs-comment"># tree ./</span><br>./<br>├── attacher.yaml<br>├── csi-s3.yaml<br>├── examples<br>│   ├── pod.yaml<br>│   ├── pvc-manual.yaml<br>│   ├── pvc.yaml<br>│   ├── secret.yaml<br>│   └── storageclass.yaml<br>└── provisioner.yaml<br><br><span class="hljs-number">1</span> directory, <span class="hljs-number">8</span> files<br></code></pre></td></tr></table></figure>
+
+<p><strong>部署driver</strong></p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-built_in">cd</span> deploy/kubernetes<br>kubectl create <span class="hljs-operator">-f</span> provisioner.yaml<br>kubectl create <span class="hljs-operator">-f</span> driver.yaml<br>kubectl create <span class="hljs-operator">-f</span> csi<span class="hljs-literal">-s3</span>.yaml<br></code></pre></td></tr></table></figure>
+
+<p><strong>查看</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/56830496c9b84e6c8ed0b49c37b734bb.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><strong>创建存储类</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs yaml">[<span class="hljs-string">root@master231</span> <span class="hljs-string">examples</span>]<span class="hljs-comment"># vim storageclass.yaml </span><br><span class="hljs-meta">---</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">StorageClass</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">storage.k8s.io/v1</span><br><span class="hljs-attr">metadata:</span><br>  <span class="hljs-attr">name:</span> <span class="hljs-string">csi-s3</span><br><span class="hljs-attr">provisioner:</span> <span class="hljs-string">ru.yandex.s3.csi</span><br><span class="hljs-attr">parameters:</span><br>  <span class="hljs-attr">mounter:</span> <span class="hljs-string">geesefs</span><br>  <span class="hljs-comment"># you can set mount options here, for example limit memory cache size (recommended)</span><br>  <span class="hljs-attr">options:</span> <span class="hljs-string">&quot;--memory-limit 1000 --dir-mode 0777 --file-mode 0666&quot;</span><br>  <span class="hljs-comment"># to use an existing bucket, specify it here:</span><br>  <span class="hljs-comment">#bucket: some-existing-bucket</span><br>  <span class="hljs-attr">csi.storage.k8s.io/provisioner-secret-name:</span> <span class="hljs-string">csi-s3-secret</span><br>  <span class="hljs-attr">csi.storage.k8s.io/provisioner-secret-namespace:</span> <span class="hljs-string">kube-system</span><br>  <span class="hljs-attr">csi.storage.k8s.io/controller-publish-secret-name:</span> <span class="hljs-string">csi-s3-secret</span><br>  <span class="hljs-attr">csi.storage.k8s.io/controller-publish-secret-namespace:</span> <span class="hljs-string">kube-system</span><br>  <span class="hljs-attr">csi.storage.k8s.io/node-stage-secret-name:</span> <span class="hljs-string">csi-s3-secret</span><br>  <span class="hljs-attr">csi.storage.k8s.io/node-stage-secret-namespace:</span> <span class="hljs-string">kube-system</span><br>  <span class="hljs-attr">csi.storage.k8s.io/node-publish-secret-name:</span> <span class="hljs-string">csi-s3-secret</span><br>  <span class="hljs-attr">csi.storage.k8s.io/node-publish-secret-namespace:</span> <span class="hljs-string">kube-system</span><br>  <br>[<span class="hljs-string">root@master231</span> <span class="hljs-string">examples</span>]<span class="hljs-comment"># kubectl apply -f storageclass.yaml </span><br></code></pre></td></tr></table></figure>
+
+<h3 id="1-模拟生成环境测试"><a href="#1-模拟生成环境测试" class="headerlink" title="1.模拟生成环境测试"></a><strong>1.模拟生成环境测试</strong></h3><p><strong>创建pvc</strong></p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs dts">[root@master231 examples]<span class="hljs-meta"># cat pvc.yaml</span><br><span class="hljs-symbol">apiVersion:</span> v1<br><span class="hljs-symbol">kind:</span> PersistentVolumeClaim<br><span class="hljs-symbol">metadata:</span><br><span class="hljs-symbol">  name:</span> csi-s3-pvc<br><span class="hljs-symbol">  namespace:</span> default<br><span class="hljs-symbol">spec:</span><br><span class="hljs-symbol">  accessModes:</span><br>  - ReadWriteMany<br><span class="hljs-symbol">  resources:</span><br><span class="hljs-symbol">    requests:</span><br><span class="hljs-symbol">      storage:</span> <span class="hljs-number">5</span>Gi<br><span class="hljs-symbol">  storageClassName:</span> csi-s3<br>  <br>[root@master231 examples]<span class="hljs-meta"># kubectl apply -f pvc.yaml </span><br></code></pre></td></tr></table></figure>
+
+<p><strong>创建pod</strong></p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs nix">[root@master231 examples]<span class="hljs-comment"># cat pod.yaml </span><br><span class="hljs-params">apiVersion:</span> v1<br><span class="hljs-params">kind:</span> Pod<br><span class="hljs-params">metadata:</span><br>  <span class="hljs-params">name:</span> csi-s3-test-nginx<br>  <span class="hljs-params">namespace:</span> default<br><span class="hljs-params">spec:</span><br>  <span class="hljs-params">containers:</span><br>   <span class="hljs-operator">-</span> <span class="hljs-params">name:</span> csi-s3-test-nginx<br>     <span class="hljs-params">image:</span> nginx<br>     <span class="hljs-params">volumeMounts:</span><br>       <span class="hljs-operator">-</span> <span class="hljs-params">mountPath:</span> <span class="hljs-symbol">/usr/share/nginx/html/s3</span><br>         <span class="hljs-params">name:</span> webroot<br>  <span class="hljs-params">volumes:</span><br>   <span class="hljs-operator">-</span> <span class="hljs-params">name:</span> webroot<br>     <span class="hljs-params">persistentVolumeClaim:</span><br>       <span class="hljs-params">claimName:</span> csi-s3-pvc<br>       <span class="hljs-params">readOnly:</span> <span class="hljs-literal">false</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>创建secret</strong></p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs dts">[root@master231 examples]<span class="hljs-meta"># cat secret.yaml </span><br><span class="hljs-symbol">apiVersion:</span> v1<br><span class="hljs-symbol">kind:</span> Secret<br><span class="hljs-symbol">metadata:</span><br><span class="hljs-symbol">  namespace:</span> kube-system<br><span class="hljs-symbol">  name:</span> csi-s3-secret<br><span class="hljs-symbol">stringData:</span><br><span class="hljs-symbol">  accessKeyID:</span> minioadmin<br><span class="hljs-symbol">  secretAccessKey:</span> minioadmin666<br>  <span class="hljs-meta">#填写minio api接口地址</span><br><span class="hljs-symbol">  endpoint:</span> http:<span class="hljs-comment">//10.0.0.12:9000  </span><br>  <span class="hljs-meta"># For AWS set it to AWS region</span><br>  <span class="hljs-meta">#region: <span class="hljs-string">&quot;&quot;</span></span><br></code></pre></td></tr></table></figure>
+
+<p> <strong>检查pv,pvc,sc,pod状态</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/4e28afc200f2413687d45a788078a5ae.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><strong>写入数据</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/637c135105f44604ac8ba1c2ff526070.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><strong>minio web界面查看是否写入成功</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/5b7bb21d10a946bbbb18cfc0f6014bb7.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AD%98%E5%82%A8%E7%AF%87/" class="category-chain-item">存储篇</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/k8s/" class="print-no-link">#k8s</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>k8s集成MinIo</div>
+      <div>http://example.com/2025/04/18/k8s集成MinIo/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>淡黄的cherry</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/18/Spring-Cloud-Nacos-K8S-%E9%9B%B6%E5%BD%B1%E5%93%8D%E5%8F%91%E5%B8%83%E6%96%B9%E6%A1%88Spring-Cloud-Nacos-K8S-%E9%9B%B6%E5%BD%B1%E5%93%8D%E5%8F%91%E5%B8%83%E6%96%B9%E6%A1%88/" title="Spring Cloud + Nacos + K8S 零影响发布方案Spring Cloud + Nacos + K8S 零影响发布方案">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Spring Cloud + Nacos + K8S 零影响发布方案Spring Cloud + Nacos + K8S 零影响发布方案</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/18/ceph%E6%96%B0%E5%A2%9E%E8%8A%82%E7%82%B9%EF%BC%8COSD%E8%AE%BE%E5%A4%87%EF%BC%8C%E6%A0%87%E7%AD%BE%E7%AE%A1%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89/" title="ceph新增节点，OSD设备，标签管理（二）">
+                        <span class="hidden-mobile">ceph新增节点，OSD设备，标签管理（二）</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  <div>
+    <span id="timeDate">正在载入天数...</span>
+    <span id="times">载入时分秒...</span>
+    <script>
+    var now = new Date();
+    function createtime(){
+        var grt= new Date("08/17/2020 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24;
+        dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum);
+        hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){
+            hnum = "0" + hnum;
+        }
+        minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes);
+        if(String(mnum).length ==1 ){
+                  mnum = "0" + mnum;
+        }
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds);
+        if(String(snum).length ==1 ){
+                  snum = "0" + snum;
+        }
+        document.getElementById("timeDate").innerHTML = "🚀已持续航行&nbsp"+dnum+"&nbsp天";  
+        document.getElementById("times").innerHTML = hnum + "&nbsp时&nbsp" + mnum + "&nbsp分&nbsp" + snum + "&nbsp秒";
+    }
+    setInterval("createtime()",250);
+    </script>
+  </div>
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom.js"></script>
+<script src="/js/snow.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

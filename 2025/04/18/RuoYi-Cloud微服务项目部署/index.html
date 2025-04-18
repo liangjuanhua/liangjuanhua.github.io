@@ -1,0 +1,1033 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/2.png">
+  <link rel="icon" href="/img/2.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="淡黄的cherry">
+  <meta name="keywords" content="">
+  <meta name="referrer" content="no-referrer">
+  
+    <meta name="description" content="前言想来第一次与微服务结缘是在我的第一个 Springboot项目，我接触到了 Nacos 和 Gateway，从那时起，便对微服务产生了浓厚的兴趣，微服务的架构设计、服务拆分、服务治理等内容确实很有意思。这也是我们从事运维的原因之一。自己工作一段时间后，我想着是时候输出一些内容了，把微服务以更加通俗易懂的部署起来。这里先带大家简单的单机部署简单了解下，实际工作中，面临网关，注册中心，调度中心，数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RuoYi-Cloud微服务项目部署">
+<meta property="og:url" content="http://example.com/2025/04/18/RuoYi-Cloud%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B2/index.html">
+<meta property="og:site_name" content="cherry">
+<meta property="og:description" content="前言想来第一次与微服务结缘是在我的第一个 Springboot项目，我接触到了 Nacos 和 Gateway，从那时起，便对微服务产生了浓厚的兴趣，微服务的架构设计、服务拆分、服务治理等内容确实很有意思。这也是我们从事运维的原因之一。自己工作一段时间后，我想着是时候输出一些内容了，把微服务以更加通俗易懂的部署起来。这里先带大家简单的单机部署简单了解下，实际工作中，面临网关，注册中心，调度中心，数">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/dacd9b75d911fe2aed60fe2f0fcd8bdd.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/3fba7c3cb6034bc18cc2fdae4b3ce194.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/8f2f6c1dc2564f79a48fefe0e082ee3f.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/990e8fa0a25f4b05a457c35dd225f80d.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/ec49860c01884246889c8eb43037745e.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/e6bd7269c87448888bc7f55f763f0404.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/915127f0e9dd429c870b83b1e4e0e283.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/bc81d0d7092c47c6b8e916e5a4fbbd6e.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/220a52f5c6984b3b86ec2b609b3a6bca.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/a55bb6d34e20443cb0e90096e0d616f6.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/689885a37e874b45924815531e471310.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/914fc6e1a1914943b8045ba6bf8dff42.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/ac7fa1990b054658bb46c0b82e3d5727.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/b22181b65b3946c692cbad2006bb2236.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/2ddb250af3d843e4b574bc7ddd741dde.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/cf55971de75042b7aa0ffeeb3037fdd9.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/124b02e0bc564e64882d702ec0faed8c.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/30e63223cfb04923960d858f69232082.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/1ba815c29a734843b380861fa45ba386.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/fe2227a0a4b74ae2be1b82fddf3c4af1.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/2e7d46f968c04841b30f6e5d64f3444c.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/2d6fcdae20cc4f3fa3a5f986251df64e.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/7593fcbf6cff4ce99620601c07370148.png">
+<meta property="article:published_time" content="2025-04-18T03:34:37.000Z">
+<meta property="article:modified_time" content="2025-04-18T04:45:28.330Z">
+<meta property="article:author" content="淡黄的cherry">
+<meta property="article:tag" content="k8s">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/dacd9b75d911fe2aed60fe2f0fcd8bdd.png">
+  
+  
+  
+  <title>RuoYi-Cloud微服务项目部署 - cherry</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/macpanel.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong class="navbar-title">cherryの技术文档</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="RuoYi-Cloud微服务项目部署"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-18 11:34" pubdate>
+          2025年4月18日 中午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          42 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">RuoYi-Cloud微服务项目部署</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>想来第一次与微服务结缘是在我的第一个 Springboot项目，我接触到了 Nacos 和 Gateway，从那时起，便对微服务产生了浓厚的兴趣，微服务的架构设计、服务拆分、服务治理等内容确实很有意思。这也是我们从事运维的原因之一。自己工作一段时间后，我想着是时候输出一些内容了，把微服务以更加通俗易懂的部署起来。这里先带大家简单的单机部署简单了解下，实际工作中，面临网关，注册中心，调度中心，数据同步选型等。其实部署到k8s中也是一样的，只是将服务容器化，使用k8s编排。如果大家感兴趣，点赞关注就是对我最大的支持。后期我会写一篇关于k8s部署Spring Cloud并结合jenkins，gitlab，harbor等做cicd流水线集成。</p>
+<h1 id="一、框架介绍"><a href="#一、框架介绍" class="headerlink" title="一、框架介绍"></a>一、框架介绍</h1><p>RuoYi-Cloud是一款基于Spring Boot、Spring Cloud &amp; Alibaba、Vue、Element的前后端分离微服务极速后台开发框架。内置模块如：部门管理、角色用户、菜单及按钮授权、数据权限、系统参数、日志管理、代码生成等。在线定时任务配置；支持集群，支持多数据源。</p>
+<p>RuoYi-Cloud 是通过Java开发，基于微服务架构设计的权限管理系统。</p>
+<p>文档地址：<a target="_blank" rel="noopener" href="http://doc.ruoyi.vip/ruoyi-cloud/">http://doc.ruoyi.vip/ruoyi-cloud/</a></p>
+<p>代码下载：<a target="_blank" rel="noopener" href="https://gitee.com/y_project/RuoYi-Cloud">https://gitee.com/y_project/RuoYi-Cloud</a> </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">Java程序开发框架介绍：<br>● Spring：是一个开源的Java开发框架，用于简化Java程序的开发。 <br>● Spring Boot：是基于Spring的全新框架，对比于Spring框架更加的简洁高效。<br>● Spring Cloud：是一套微服务开发框架。<br>● Spring Cloud Alibaba：是阿里巴巴推出的微服务开发框架。<br></code></pre></td></tr></table></figure>
+
+<h2 id="架构图"><a href="#架构图" class="headerlink" title="架构图"></a>架构图</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">架构图RuoYi-Cloud-Processon (opens new window)分享地址。<br>https://www.processon.com/view/5ec290195653bb6f2a18504e<br></code></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/dacd9b75d911fe2aed60fe2f0fcd8bdd.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h2 id="系统模块"><a href="#系统模块" class="headerlink" title="系统模块"></a>系统模块</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs bash">com.ruoyi     <br>├── ruoyi-ui              // 前端框架 [80]<br>├── ruoyi-gateway         // 网关模块 [8080]<br>├── ruoyi-auth            // 认证中心 [9200]<br>├── ruoyi-api             // 接口模块<br>│       └── ruoyi-api-system                          // 系统接口<br>├── ruoyi-common          // 通用模块<br>│       └── ruoyi-common-core                         // 核心模块<br>│       └── ruoyi-common-datascope                    // 权限范围<br>│       └── ruoyi-common-datasource                   // 多数据源<br>│       └── ruoyi-common-log                          // 日志记录<br>│       └── ruoyi-common-redis                        // 缓存服务<br>│       └── ruoyi-common-seata                        // 分布式事务<br>│       └── ruoyi-common-security                     // 安全模块<br>│       └── ruoyi-common-sensitive                    // 数据脱敏<br>│       └── ruoyi-common-swagger                      // 系统接口<br>├── ruoyi-modules         // 业务模块<br>│       └── ruoyi-system                              // 系统模块 [9201]<br>│       └── ruoyi-gen                                 // 代码生成 [9202]<br>│       └── ruoyi-job                                 // 定时任务 [9203]<br>│       └── ruoyi-file                                // 文件服务 [9300]<br>├── ruoyi-visual          // 图形化管理模块<br>│       └── ruoyi-visual-monitor                      // 监控中心 [9100]<br>├──pom.xml                // 公共依赖<br></code></pre></td></tr></table></figure>
+
+<h2 id="主要特性"><a href="#主要特性" class="headerlink" title="主要特性"></a>主要特性</h2><ul>
+<li>完全响应式布局（支持电脑、平板、手机等所有主流设备）</li>
+<li>强大的一键生成功能（包括控制器、模型、视图、菜单等）</li>
+<li>支持多数据源，简单配置即可实现切换。</li>
+<li>支持按钮及数据权限，可自定义部门数据权限。</li>
+<li>对常用js插件进行二次封装，使js代码变得简洁，更加易维护</li>
+<li>完善的XSS防范及脚本过滤，彻底杜绝XSS攻击</li>
+<li>Maven多项目依赖，模块及插件分项目，尽量松耦合，方便模块升级、增减模块。</li>
+<li>国际化支持，服务端及客户端支持</li>
+<li>完善的日志记录体系简单注解即可实现</li>
+</ul>
+<h2 id="技术选型"><a href="#技术选型" class="headerlink" title="技术选型"></a>技术选型</h2><p><strong>1、系统环境</strong></p>
+<ul>
+<li>Java EE 8</li>
+<li>Servlet 3.0</li>
+<li>Apache Maven 3</li>
+</ul>
+<p><strong>2、主框架</strong></p>
+<ul>
+<li>Spring Boot 2.3.x</li>
+<li>Spring Cloud Hoxton.SR9</li>
+<li>Spring Framework 5.2.x</li>
+<li>Spring Security 5.2.x</li>
+</ul>
+<p><strong>3、持久层</strong></p>
+<ul>
+<li>Apache MyBatis 3.5.x</li>
+<li>Hibernate Validation 6.0.x</li>
+<li>Alibaba Druid 1.2.x</li>
+</ul>
+<p><strong>4、视图层</strong></p>
+<ul>
+<li>Vue 2.6.x</li>
+<li>Axios 0.21.0</li>
+<li>Element 2.14.x</li>
+</ul>
+<h2 id="内置功能"><a href="#内置功能" class="headerlink" title="内置功能"></a>内置功能</h2><ul>
+<li>用户管理：用户是系统操作者，该功能主要完成系统用户配置。</li>
+<li>部门管理：配置系统组织机构（公司、部门、小组），树结构展现支持数据权限。</li>
+<li>岗位管理：配置系统用户所属担任职务。</li>
+<li>菜单管理：配置系统菜单，操作权限，按钮权限标识等。</li>
+<li>角色管理：角色菜单权限分配、设置角色按机构进行数据范围权限划分。</li>
+<li>字典管理：对系统中经常使用的一些较为固定的数据进行维护。</li>
+<li>参数管理：对系统动态配置常用参数。</li>
+<li>通知公告：系统通知公告信息发布维护。</li>
+<li>操作日志：系统正常操作日志记录和查询；系统异常信息日志记录和查询。</li>
+<li>登录日志：系统登录日志记录查询包含登录异常。</li>
+<li>在线用户：当前系统中活跃用户状态监控。</li>
+<li>定时任务：在线（添加、修改、删除)任务调度包含执行结果日志。</li>
+<li>代码生成：前后端代码的生成（java、html、xml、sql)支持CRUD下载 。</li>
+<li>系统接口：根据业务代码自动生成相关的api接口文档。</li>
+<li>服务监控：监视当前系统CPU、内存、磁盘、堆栈等相关信息。</li>
+<li>在线构建器：拖动表单元素生成相应的HTML代码。</li>
+<li>连接池监视：监视当期系统数据库连接池状态，可进行分析SQL找出系统性能瓶颈。</li>
+</ul>
+<h1 id="二、准备代码"><a href="#二、准备代码" class="headerlink" title="二、准备代码"></a>二、准备代码</h1><p>gitee地址：<a target="_blank" rel="noopener" href="https://gitee.com/y_project/RuoYi-Cloud">https://gitee.com/y_project/RuoYi-Cloud</a></p>
+<p>下载代码<br><img src="https://gitee.com/ljh00928/csdn/raw/master/img/3fba7c3cb6034bc18cc2fdae4b3ce194.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>创建代码存放目录</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# <span class="hljs-built_in">mkdir</span> RuoYi-Cloud<br><br>[root@node1.local ~]# <span class="hljs-built_in">cd</span> RuoYi-Cloud/<br><br>解压zip包<br>[root@node1.local RuoYi-Cloud]# unzip RuoYi-Cloud-master.zip<br></code></pre></td></tr></table></figure>
+
+<p>查看</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local RuoYi-Cloud]# <span class="hljs-built_in">cd</span> RuoYi-Cloud-master/<br>[root@node1.local RuoYi-Cloud-master]# ll<br>total 88<br>drwxr-xr-x 13 root root  4096 Jan  7 10:55 ./<br>drwxr-xr-x  3 root root  4096 Feb 10 14:12 ../<br>drwxr-xr-x  2 root root  4096 Jan  7 10:55 bin/<br>drwxr-xr-x  7 root root  4096 Jan  7 10:55 docker/<br>drwxr-xr-x  2 root root  4096 Jan  7 10:55 .github/<br>-rw-r--r--  1 root root   698 Jan  7 10:55 .gitignore<br>-rw-r--r--  1 root root  1063 Jan  7 10:55 LICENSE<br>-rw-r--r--  1 root root 12420 Jan  7 10:55 pom.xml<br>-rw-r--r--  1 root root  9220 Jan  7 10:55 README.md<br>drwxr-xr-x  3 root root  4096 Jan  7 10:55 ruoyi-api/<br>drwxr-xr-x  3 root root  4096 Jan  7 10:55 ruoyi-auth/<br>drwxr-xr-x 11 root root  4096 Jan  7 10:55 ruoyi-common/<br>drwxr-xr-x  3 root root  4096 Jan  7 10:55 ruoyi-gateway/<br>drwxr-xr-x  6 root root  4096 Jan  7 10:55 ruoyi-modules/<br>drwxr-xr-x  6 root root  4096 Jan  7 10:55 ruoyi-ui/<br>drwxr-xr-x  3 root root  4096 Jan  7 10:55 ruoyi-visual/<br>drwxr-xr-x  2 root root  4096 Jan  7 10:55 sql/<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="三、环境部署"><a href="#三、环境部署" class="headerlink" title="三、环境部署"></a>三、环境部署</h1><h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">JDK &gt;= 1.8 (推荐1.8版本)<br>Mysql &gt;= 5.7.0 (推荐5.7版本)<br>Redis &gt;= 3.0<br>Maven &gt;= 3.0<br>Node &gt;= 12<br>nacos &gt;= 2.0.4 (ruoyi-cloud &lt; 3.0 需要下载nacos &gt;= 1.4.x版本)<br>sentinel &gt;= 1.6.0<br></code></pre></td></tr></table></figure>
+
+<p>查看jdk对应maven版本链接：<a target="_blank" rel="noopener" href="http://maven.apache.org/docs/history.html">http://maven.apache.org/docs/history.html</a></p>
+<h2 id="安装jdk"><a href="#安装jdk" class="headerlink" title="安装jdk"></a>安装jdk</h2><p>官网地址：<a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/downloads/#java8">https://www.oracle.com/java/technologies/downloads/#java8</a></p>
+<p>查看系统架构</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# <span class="hljs-built_in">uname</span> -m<br>x86_64<br><br></code></pre></td></tr></table></figure>
+
+<p>下载jdk<br><img src="https://gitee.com/ljh00928/csdn/raw/master/img/8f2f6c1dc2564f79a48fefe0e082ee3f.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>创建jdk存放目录</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local jdk]# <span class="hljs-built_in">mkdir</span> /usr/local/src/jdk<br><br>[root@node1.local jdk]# ll<br>total 144896<br>drwxr-xr-x 2 root root      4096 Feb 10 13:11 ./<br>drwxr-xr-x 4 root root      4096 Feb 10 11:44 ../<br>-rw-r--r-- 1 root root 148362647 Nov 18 22:08 jdk-8u431-linux-x64.tar.gz<br><br>解压tar包<br>[root@node1.local jdk]# tar xf jdk-8u431-linux-x64.tar.gz <br><br>[root@node1.local jdk1.8.0_431]# <span class="hljs-built_in">pwd</span><br>/usr/local/src/jdk/jdk1.8.0_431<br><br></code></pre></td></tr></table></figure>
+
+<p>配置环境变量</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# vim .bashrc<br><span class="hljs-built_in">export</span> JAVA_HOME=/usr/local/src/jdk/jdk1.8.0_441<br><span class="hljs-built_in">export</span> PATH=<span class="hljs-variable">$PATH</span>:<span class="hljs-variable">$JAVA_HOME</span>/bin<br><br>[root@node1.local ~]# <span class="hljs-built_in">source</span> .bashrc<br><br></code></pre></td></tr></table></figure>
+
+<p>测试</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# java -version<br>java version <span class="hljs-string">&quot;1.8.0_431&quot;</span><br>Java(TM) SE Runtime Environment (build 1.8.0_431-b10)<br>Java HotSpot(TM) 64-Bit Server VM (build 25.431-b10, mixed mode)<br><br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="安装maven"><a href="#安装maven" class="headerlink" title="安装maven"></a>安装maven</h2><p>官方地址：<a target="_blank" rel="noopener" href="https://maven.apache.org/download.cgi">https://maven.apache.org/download.cgi</a></p>
+<p>创建maven存放目录</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local maven]# <span class="hljs-built_in">mkdir</span> /usr/local/src/maven<br><br>解压tar包<br>[root@node1.local maven]# tar xf apache-maven-3.9.9-bin.tar.gz<br></code></pre></td></tr></table></figure>
+
+<p>配置maven仓库，设置阿里镜像仓库，一定要配置一下，国内的下载jar快些，首先进入cd apache-maven-3.6.3目录，创建仓库存储目录ck</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local maven]# <span class="hljs-built_in">cd</span> apache-maven-3.9.9/<br><br>创建仓库存储目录ck<br>[root@node1.local apache-maven-3.9.9]# <span class="hljs-built_in">mkdir</span> ck<br>[root@node1.local apache-maven-3.9.9]# ll<br>total 60<br>drwxr-xr-x 7 root root  4096 Feb 10 11:26 ./<br>drwxr-xr-x 3 root root  4096 Feb 10 11:25 ../<br>drwxr-xr-x 2 root root  4096 Feb 10 11:25 bin/<br>drwxr-xr-x 2 root root  4096 Feb 10 11:25 boot/<br>drwxr-xr-x 2 root root  4096 Feb 10 11:26 ck/<br>drwxr-xr-x 3 root root  4096 Feb 10 11:32 conf/<br>drwxr-xr-x 4 root root  4096 Feb 10 11:25 lib/<br>-rw-r--r-- 1 root root 18920 Aug 14 16:48 LICENSE<br>-rw-r--r-- 1 root root  5034 Aug 14 16:48 NOTICE<br>-rw-r--r-- 1 root root  1279 Aug 14 16:48 README.txt<br><br></code></pre></td></tr></table></figure>
+
+<p>进入cd conf目录，编辑 vi settings.xml文件，找到·localRepository下面复制一行加上<localRepository>&#x2F;usr&#x2F;local&#x2F;apache-maven-3.6.3&#x2F;ck</localRepository>， 在找到mirror 加上阿里的仓库配置，配置完成报错退出</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local apache-maven-3.9.9]# <span class="hljs-built_in">cd</span> conf/<br>[root@node1.local conf]# ll<br>total 28<br>drwxr-xr-x 3 root root  4096 Feb 10 11:32 ./<br>drwxr-xr-x 7 root root  4096 Feb 10 11:26 ../<br>drwxr-xr-x 2 root root  4096 Aug 14 16:48 logging/<br>-rw-r--r-- 1 root root 10473 Feb 10 11:32 settings.xml<br>-rw-r--r-- 1 root root  3645 Aug 14 16:48 toolchains.xml<br><br>[root@node1.local conf]# vim settings.xml <br>....<br><span class="hljs-comment">#配置仓库存储目录位置</span><br>&lt;localRepository&gt;/usr/local/src/maven/apache-maven-3.9.9/ck&lt;/localRepository&gt;<br>....<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/990e8fa0a25f4b05a457c35dd225f80d.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>阿里的仓库配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local conf]# vim settings.xml <br>....<br>&lt;mirror&gt;<br>      &lt;<span class="hljs-built_in">id</span>&gt;alimaven&lt;/id&gt;<br>      &lt;name&gt;aliyun maven&lt;/name&gt;<br>       &lt;url&gt;http://maven.aliyun.com/nexus/content/groups/public/&lt;/url&gt;<br>      &lt;mirrorOf&gt;central&lt;/mirrorOf&gt;<br>&lt;/mirror&gt;<br>....<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/ec49860c01884246889c8eb43037745e.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>配置maven环境变量</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# vim .bashrc<br><span class="hljs-built_in">export</span> MAVEN_HOME=/usr/local/src/maven/apache-maven-3.9.9<br><span class="hljs-built_in">export</span> PATH=<span class="hljs-variable">$PATH</span>:<span class="hljs-variable">$MAVEN_HOME</span>/bin<br><br>[root@node1.local ~]# <span class="hljs-built_in">source</span> .bashrc<br></code></pre></td></tr></table></figure>
+
+<p>测试</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# mvn -v<br>Apache Maven 3.9.9 (8e8579a9e76f7d015ee5ec7bfcdc97d260186937)<br>Maven home: /usr/local/src/maven/apache-maven-3.9.9<br>Java version: 1.8.0_431, vendor: Oracle Corporation, runtime: /usr/local/src/jdk/jdk1.8.0_431/jre<br>Default locale: en_US, platform encoding: UTF-8<br>OS name: <span class="hljs-string">&quot;linux&quot;</span>, version: <span class="hljs-string">&quot;6.8.0-52-generic&quot;</span>, <span class="hljs-built_in">arch</span>: <span class="hljs-string">&quot;amd64&quot;</span>, family: <span class="hljs-string">&quot;unix&quot;</span><br><br></code></pre></td></tr></table></figure>
+
+<h2 id="安装nodejs"><a href="#安装nodejs" class="headerlink" title="安装nodejs"></a>安装nodejs</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local RuoYi-Cloud-master]# apt install npm<br></code></pre></td></tr></table></figure>
+
+<p>测试</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local RuoYi-Cloud-master]# node -v<br>v18.19.1<br>[root@node1.local RuoYi-Cloud-master]# npm -v<br>9.2.0<br></code></pre></td></tr></table></figure>
+
+<h2 id="安装mysql"><a href="#安装mysql" class="headerlink" title="安装mysql"></a>安装mysql</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# apt install mysql-server<br><br>[root@node1.local ~]# mysql -V<br>mysql  Ver 8.0.41-0ubuntu0.24.04.1 <span class="hljs-keyword">for</span> Linux on x86_64 ((Ubuntu))<br></code></pre></td></tr></table></figure>
+
+<p>加入开机自启</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local apt]# systemctl <span class="hljs-built_in">enable</span> mysql.service<br>Synchronizing state of mysql.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.<br>Executing: /usr/lib/systemd/systemd-sysv-install <span class="hljs-built_in">enable</span> mysql<br></code></pre></td></tr></table></figure>
+
+<p>查看所有用户信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mysql">select user,host from mysql.user;<br></code></pre></td></tr></table></figure>
+
+<p>创建root账号，密码123456</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; create user root @&#x27;%&#x27; identified by &#x27;123456&#x27;;<br></code></pre></td></tr></table></figure>
+
+<p>用户所有权限但是不包括授权的权限</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; grant all on *.* to root@&#x27;%&#x27;; <br></code></pre></td></tr></table></figure>
+
+<p>给用户可以授权其他用户的权限</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; grant Grant option on *.* to root@&#x27;%&#x27;;<br></code></pre></td></tr></table></figure>
+
+<p>修改监听地址<br><img src="https://gitee.com/ljh00928/csdn/raw/master/img/e6bd7269c87448888bc7f55f763f0404.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p><strong>注意</strong>：配置8.0版本参考：我这里通过这种方式没有实现所有IP都能访问；我是通过直接修改配置文件才实现的，MySQL8.0版本把配置文件 <code>my.cnf</code> 拆分成<code>mysql.cnf </code>和<code>mysqld.cnf</code>，我们需要修改的是<code>mysqld.cnf</code>文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local mysql]# vim /etc/mysql/mysql.conf.d/mysqld.cnf<br>...<br>bind-address            = 0.0.0.0<br>mysqlx-bind-address     = 0.0.0.0<br></code></pre></td></tr></table></figure>
+
+<p>重启服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local mysql.conf.d]# systemctl restart mysql<br></code></pre></td></tr></table></figure>
+
+<p>查看</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/915127f0e9dd429c870b83b1e4e0e283.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<h2 id="安装redis"><a href="#安装redis" class="headerlink" title="安装redis"></a>安装redis</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local apt]# apt install redis<br></code></pre></td></tr></table></figure>
+
+<p>加入开机自启</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local apt]# systemctl list-units --<span class="hljs-built_in">type</span>=service | grep redis<br>  redis-server.service                   loaded active     running      Advanced key-value store<br>  <br>[root@node1.local apt]# systemctl <span class="hljs-built_in">enable</span> redis-server.service --now<br>Synchronizing state of redis-server.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.<br>Executing: /usr/lib/systemd/systemd-sysv-install <span class="hljs-built_in">enable</span> redis-server<br></code></pre></td></tr></table></figure>
+
+<h2 id="安装nacos"><a href="#安装nacos" class="headerlink" title="安装nacos"></a>安装nacos</h2><p>先部署微服务注册中心Nacos，在部署微服务层各个模块，最后接入前端UI</p>
+<p>官方地址：<a target="_blank" rel="noopener" href="https://nacos.io/zh-cn/">https://nacos.io/zh-cn/</a></p>
+<p>下载tar包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# wget https://github.com/alibaba/nacos/releases/download/2.1.1/nacos-server-2.1.1.tar.gz<br></code></pre></td></tr></table></figure>
+
+<p>解压tar包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# tar -xf nacos-server-2.1.1.tar.gz &amp;&amp; <span class="hljs-built_in">cd</span> nacos<br></code></pre></td></tr></table></figure>
+
+<p>编辑配置文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# <span class="hljs-built_in">cd</span> ./nacos/conf/<br>[root@node1.local conf]# ll<br>total 96<br>drwxr-xr-x 2  502 staff  4096 Feb 10 16:20 ./<br>drwxr-xr-x 5 root root   4096 Feb 10 16:03 ../<br>-rw-r--r-- 1  502 staff  1224 May 11  2022 1.4.0-ipv6_support-update.sql<br>-rw-r--r-- 1  502 staff  9798 Feb 10 16:20 application.properties<br>-rw-r--r-- 1  502 staff  9754 Aug  8  2022 application.properties.example<br>-rw-r--r-- 1  502 staff   670 Aug  8  2022 cluster.conf.example<br>-rw-r--r-- 1  502 staff 31156 Aug  8  2022 nacos-logback.xml<br>-rw-r--r-- 1  502 staff 10825 Aug  8  2022 nacos-mysql.sql<br>-rw-r--r-- 1  502 staff  8939 Aug  8  2022 schema.sql<br><br>[root@node1.local conf]# vim application.properties<br><span class="hljs-comment">###nacos的默认访问路径（不需要修改）</span><br>server.servlet.contextPath=/nacos<br><br><span class="hljs-comment">#nacos默认端口（不需要修改）</span><br>server.port=8848<br><br><span class="hljs-comment">###使用MySQL作为数据源（取消注释）</span><br>spring.datasource.platform=mysql<br><br><span class="hljs-comment">###数据库数量（取消注释）</span><br>db.num=1<br><br><span class="hljs-comment">###连接数据库的信息（连接本机数据库地址不需要修改）</span><br><span class="hljs-comment">###JDBC连接数据库最后面添加 &amp;allowPublicKeyRetrieval=true 允许进行SSL连接，MySQL高版本不开启该参数会导致SSL连接时出现错误，Nacos无法启动</span><br>db.url.0=jdbc:mysql://127.0.0.1:3306/nacos?characterEncoding=utf8&amp;connectTimeout=1000&amp;socketTimeout=3000&amp;autoReconnect=<span class="hljs-literal">true</span>&amp;useUnicode=<span class="hljs-literal">true</span>&amp;useSSL=<span class="hljs-literal">false</span>&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=<span class="hljs-literal">true</span><br><br><span class="hljs-comment">###连接数据库的用户名（需要指定用户名）</span><br>db.user.0=root<br><br><span class="hljs-comment">###连接数据库的用户密码（需要指定用户名密码）</span><br>db.password.0=123456<br></code></pre></td></tr></table></figure>
+
+<p>在MySQL中创建<code>ry-cloud</code>数据库</p>
+<p>登录数据库</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mysql">[root@node1.local conf]# mysql -uroot -p123456<br></code></pre></td></tr></table></figure>
+
+<p>创建ry-cloud库</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; create database `ry-cloud` charset utf8;<br></code></pre></td></tr></table></figure>
+
+<p>创建ry-config库</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; create database `ry-config` charset utf8;<br></code></pre></td></tr></table></figure>
+
+<p>查看所有库</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; show databases;<br>+--------------------+<br>| Database           |<br>+--------------------+<br>| information_schema |<br>| mysql              |<br>| performance_schema |<br>| ry-cloud           |<br>| ry-config          |<br>| sys                |<br>+--------------------+<br>6 rows in set (0.01 sec)<br></code></pre></td></tr></table></figure>
+
+<p>导入数据</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local sql]# <span class="hljs-built_in">pwd</span><br>/root/RuoYi-Cloud/RuoYi-Cloud-master/sql<br><br>[root@node1.local sql]# ll<br>total 100<br>drwxr-xr-x  2 root root  4096 Jan  7 10:55 ./<br>drwxr-xr-x 13 root root  4096 Jan  7 10:55 ../<br>-rw-r--r--  1 root root 11985 Jan  7 10:55 quartz.sql<br>-rw-r--r--  1 root root 56722 Jan  7 10:55 ry_20240629.sql<br>-rw-r--r--  1 root root 20053 Jan  7 10:55 ry_config_20240902.sql<br>-rw-r--r--  1 root root  3083 Jan  7 10:55 ry_seata_20210128.sql<br><br>导入数据<br>[root@node1.local sql]# mysql -uroot -p123456 ry-config &lt;ry_config_20240902.sql<br>mysql: [Warning] Using a password on the <span class="hljs-built_in">command</span> line interface can be insecure.<br>[root@node1.local sql]# mysql -uroot -p123456 ry-cloud &lt; ry_20240629.sql<br>mysql: [Warning] Using a password on the <span class="hljs-built_in">command</span> line interface can be insecure.<br></code></pre></td></tr></table></figure>
+
+<p>修改Nacos的<code>application.properties</code>文件，将默认的Nacos库指向新的<code>ry-config</code>库，这样Nacos就可以管理项目的配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs mysql">vim nacos/conf/application.properties<br>....<br>db.url.0=jdbc:mysql://192.1.7.244:3306/ry-config?characterEncoding=utf8&amp;connectTimeout=1000&amp;socketTimeout=3000&amp;autoReconnect=true&amp;useUnicode=true&amp;useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true<br>db.user.0=root<br>db.password.0=123456<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/bc81d0d7092c47c6b8e916e5a4fbbd6e.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>启动 Nacos 服务（standalone表示单机模式运行，非集群模式）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local bin]# <span class="hljs-built_in">pwd</span><br>/root/nacos/bin<br><br>[root@node1.local bin]# ./startup.sh -m standalone<br>/usr/local/src/jdk/jdk1.8.0_431/bin/java -Djava.ext.dirs=/usr/local/src/jdk/jdk1.8.0_431/jre/lib/ext:/usr/local/src/jdk/jdk1.8.0_431/lib/ext  -Xms512m -Xmx512m -Xmn256m -Dnacos.standalone=<span class="hljs-literal">true</span> -Dnacos.member.list= -Xloggc:/root/nacos/logs/nacos_gc.log -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=10 -XX:GCLogFileSize=100M -Dloader.path=/root/nacos/plugins/health,/root/nacos/plugins/cmdb,/root/nacos/plugins/selector -Dnacos.home=/root/nacos -jar /root/nacos/target/nacos-server.jar  --spring.config.additional-location=file:/root/nacos/conf/ --logging.config=/root/nacos/conf/nacos-logback.xml --server.max-http-header-size=524288<br>nacos is starting with standalone<br>nacos is starting，you can check the /root/nacos/logs/start.out<br></code></pre></td></tr></table></figure>
+
+<p>查看日志</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local bin]# <span class="hljs-built_in">tail</span> -f 100 /root/nacos/logs/start.out<br></code></pre></td></tr></table></figure>
+
+<p>访问</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">地址：http://192.1.7.244:8848/nacos/index.html<br>账号：nacos<br>密码：nacos<br></code></pre></td></tr></table></figure>
+
+<p>此时Nacos已经获取到RuoYi-Cloud各组件的配置文件，后续修改各组件的配置文件，在Nacos中修改即可。</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/220a52f5c6984b3b86ec2b609b3a6bca.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<h2 id="打包RuoYi-Cloud项目"><a href="#打包RuoYi-Cloud项目" class="headerlink" title="打包RuoYi Cloud项目"></a>打包RuoYi Cloud项目</h2><p>进入RuoYi-Cloud目录打包项目</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# <span class="hljs-built_in">cd</span> RuoYi-Cloud<br></code></pre></td></tr></table></figure>
+
+<p>使用maven打包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local RuoYi-Cloud-master]# mvn clean package -Dmaven.test.skip=<span class="hljs-literal">true</span><br>....<br>[INFO] ------------------------------------------------------------------------<br>[INFO] Reactor Summary <span class="hljs-keyword">for</span> ruoyi 3.6.5:<br>[INFO] <br>[INFO] ruoyi .............................................. SUCCESS [  8.096 s]<br>[INFO] ruoyi-common ....................................... SUCCESS [  0.002 s]<br>[INFO] ruoyi-common-core .................................. SUCCESS [01:35 min]<br>[INFO] ruoyi-api .......................................... SUCCESS [  0.002 s]<br>[INFO] ruoyi-api-system ................................... SUCCESS [  0.233 s]<br>[INFO] ruoyi-common-redis ................................. SUCCESS [  5.422 s]<br>[INFO] ruoyi-common-security .............................. SUCCESS [  0.772 s]<br>[INFO] ruoyi-auth ......................................... SUCCESS [ 58.992 s]<br>[INFO] ruoyi-gateway ...................................... SUCCESS [ 17.479 s]<br>[INFO] ruoyi-visual ....................................... SUCCESS [  0.001 s]<br>[INFO] ruoyi-visual-monitor ............................... SUCCESS [  6.823 s]<br>[INFO] ruoyi-common-datasource ............................ SUCCESS [  9.523 s]<br>[INFO] ruoyi-common-datascope ............................. SUCCESS [  0.121 s]<br>[INFO] ruoyi-common-log ................................... SUCCESS [  0.191 s]<br>[INFO] ruoyi-common-swagger ............................... SUCCESS [  1.419 s]<br>[INFO] ruoyi-modules ...................................... SUCCESS [  0.001 s]<br>[INFO] ruoyi-modules-system ............................... SUCCESS [  1.307 s]<br>[INFO] ruoyi-modules-gen .................................. SUCCESS [  1.825 s]<br>[INFO] ruoyi-modules-job .................................. SUCCESS [  1.882 s]<br>[INFO] ruoyi-modules-file ................................. SUCCESS [ 13.886 s]<br>[INFO] ruoyi-common-seata ................................. SUCCESS [ 24.541 s]<br>[INFO] ruoyi-common-sensitive ............................. SUCCESS [  0.109 s]<br>[INFO] ------------------------------------------------------------------------<br>[INFO] BUILD SUCCESS<br>[INFO] ------------------------------------------------------------------------<br>[INFO] Total <span class="hljs-keyword">time</span>:  04:28 min<br>[INFO] Finished at: 2025-02-10T18:26:29+08:00<br>[INFO] ------------------------------------------------------------------------<br><br></code></pre></td></tr></table></figure>
+
+<p>如果打包其中的一个项目，可以使用这种方式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">mvn package -Dmaven.test.skip=<span class="hljs-literal">true</span> -pl ruoyi-modules/ruoyi-system/ -am<br></code></pre></td></tr></table></figure>
+
+<h1 id="四、部署模块"><a href="#四、部署模块" class="headerlink" title="四、部署模块"></a>四、部署模块</h1><h2 id="部署system系统模块"><a href="#部署system系统模块" class="headerlink" title="部署system系统模块"></a>部署system系统模块</h2><p>登录到nacos修改<code>ruoyi-system-dev.yml</code>文件，需要指定连接数据库</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># spring配置</span><br>spring:<br>  redis:<br>    <span class="hljs-comment"># 定义连接Redis的主机(默认本机不需要改)</span><br>    host: localhost<br>    port: 6379<br>    password:<br>      datasource:<br>         <span class="hljs-comment"># 主库数据源,连接MySQL数据库的用户名和密码需要修改</span><br>          master:<br>            driver-class-name: com.mysql.cj.jdbc.Driver<br>            url: jdbc:mysql://192.1.7.244:3306/ry-cloud?useUnicode=<span class="hljs-literal">true</span>&amp;characterEncoding=utf8&amp;zeroDateTimeBehavior=convertToNull&amp;useSSL=<span class="hljs-literal">true</span>&amp;serverTimezone=GMT%2B8<br>            username: root<br>            password: 123456<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/a55bb6d34e20443cb0e90096e0d616f6.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>添加配置后，点击右下角的【发布】即可。</p>
+<p>启动ruoyi-system模块</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">java -Dspring.profiles.active=dev \<br>-Dspring.cloud.nacos.config.file-extension=yml \<br>-Dspring.cloud.nacos.discovery.server-addr=192.1.7.244:8848 \<br>-Dspring.cloud.nacos.config.server-addr=192.1.7.244:8848 \<br>-jar /root/RuoYi-Cloud/RuoYi-Cloud-master/ruoyi-modules/ruoyi-system/target/ruoyi-modules-system.jar &amp;&gt; /var/log/ruoyi-system.log &amp;<br></code></pre></td></tr></table></figure>
+
+<p>命令解释：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">java	                               	     //Java 命令<br>-Dspring.profiles.active       //在spring中用于设置程序的配置环境（dev开发，<span class="hljs-built_in">test</span>测试，prod生产）<br>-Dspring.cloud.nacos.config.file-extension 	//指定了程序的配置文件在Nacos的扩展名为yml<br>-Dspring.cloud.nacos.discovery.server-addr 	//指定了Nacos服务发现的地址和端口<br>-Dspring.cloud.nacos.config.server-addr    	//指定了Nacos配置中心的地址和端口<br>-jar   	                                   			//指定jar包路径和名称<br></code></pre></td></tr></table></figure>
+
+<p>查看日志</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local RuoYi-Cloud-master]# <span class="hljs-built_in">tail</span> -f /var/log/ruoyi-system.log<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/689885a37e874b45924815531e471310.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>nacos查看服务，这时候可以看见服务已经注册上来了</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/914fc6e1a1914943b8045ba6bf8dff42.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/ac7fa1990b054658bb46c0b82e3d5727.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>注册成功后，网关就可以通过Nacos获取到该服务的信息，来调用该服务。</p>
+<h2 id="部署auth认证模块"><a href="#部署auth认证模块" class="headerlink" title="部署auth认证模块"></a>部署auth认证模块</h2><p>登录Nacos修改<code>ruoyi-auth-dev.yml</code>文件，指定连接Redis信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">spring:<br>  redis:<br>    host: localhost<br>    port: 6379<br>    password:<br></code></pre></td></tr></table></figure>
+
+<p>添加配置后，点击右下角的【发布】即可。</p>
+<p>启动ruoy-auth模块</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">java -Dspring.profiles.active=dev \<br>-Dspring.cloud.nacos.config.file-extension=yml \<br>-Dspring.cloud.nacos.discovery.server-addr=192.1.7.244:8848 \<br>-Dspring.cloud.nacos.config.server-addr=192.1.7.244:8848 \<br>-jar /root/RuoYi-Cloud/RuoYi-Cloud-master/ruoyi-auth/target/ruoyi-auth.jar &amp;&gt; /var/log/ruoyi-auth.log &amp;<br><br></code></pre></td></tr></table></figure>
+
+<p>查看日志</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/b22181b65b3946c692cbad2006bb2236.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>在Nacos服务列表中查看是否注册成功</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/2ddb250af3d843e4b574bc7ddd741dde.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<h2 id="部署gateway网关模块"><a href="#部署gateway网关模块" class="headerlink" title="部署gateway网关模块"></a>部署gateway网关模块</h2><p>登录Nacos修改<code>ruoyi-gateway-dev.yml</code>文件，需要指定连接Redis信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">spring:<br>  redis:<br>    host: localhost<br>    port: 6379<br>    password:<br></code></pre></td></tr></table></figure>
+
+<p>添加配置后，点击右下角的【发布】即可。</p>
+<p>启动ruoyi-gateway模块</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">java -Dspring.profiles.active=dev \<br>-Dspring.cloud.nacos.config.file-extension=yml \<br>-Dspring.cloud.nacos.discovery.server-addr=192.1.7.244:8848 \<br>-Dspring.cloud.nacos.config.server-addr=192.1.7.244:8848 \<br>-jar /root/RuoYi-Cloud/RuoYi-Cloud-master/ruoyi-gateway/target/ruoyi-gateway.jar &amp;&gt; /var/log/ruoyi-gateway.log &amp;<br></code></pre></td></tr></table></figure>
+
+<p>查看日志</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local target]# <span class="hljs-built_in">tail</span> -f /var/log/ruoyi-gateway.log<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/cf55971de75042b7aa0ffeeb3037fdd9.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>在Nacos服务列表中查看是否注册成功</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/124b02e0bc564e64882d702ec0faed8c.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<h2 id="部署monitor监控模块"><a href="#部署monitor监控模块" class="headerlink" title="部署monitor监控模块"></a>部署monitor监控模块</h2><p>monitor配置信息存储在nacos中，文件为ruoyi-monitor-dev.yml</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># spring</span><br>spring:<br>  security:<br>    user:<br>      name: admin<br>      password: 123456<br>  boot:<br>    admin:<br>      ui:<br>        title: 若依服务状态监控<br></code></pre></td></tr></table></figure>
+
+<p>启动ruoyi-monitor模块</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">java -Dspring.profiles.active=dev \<br>-Dspring.cloud.nacos.config.file-extension=yml \<br>-Dspring.cloud.nacos.discovery.server-addr=192.1.7.244:8848 \<br>-Dspring.cloud.nacos.config.server-addr=192.1.7.244:8848 \<br>-jar /root/RuoYi-Cloud/RuoYi-Cloud-master/ruoyi-visual/ruoyi-monitor/target/ruoyi-visual-monitor.jar &amp;&gt; /var/log/ruoyi-monitor.log &amp;<br></code></pre></td></tr></table></figure>
+
+<p>查看日志</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/30e63223cfb04923960d858f69232082.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>在Nacos服务列表中查看是否注册成功</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/1ba815c29a734843b380861fa45ba386.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>访问ruoyi-monitor的页面</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">url: http://192.1.7.244:9100/login<br>账号：admin<br>密码：123456<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/fe2227a0a4b74ae2be1b82fddf3c4af1.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<h2 id="部署ui前端"><a href="#部署ui前端" class="headerlink" title="部署ui前端"></a>部署ui前端</h2><p>修改ruoyi-ui连接gateway的地址（本环境网关与ruoyi-ui部署在同一节点，无需修改）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local RuoYi-Cloud-master]#  vim RuoYi-Cloud/ruoyi-ui/vue.config.js<br><span class="hljs-comment">#...</span><br>  devServer: &#123;<br>    host: <span class="hljs-string">&#x27;0.0.0.0&#x27;</span>,<br>    port: port,<br>    open: <span class="hljs-literal">true</span>,<br>    proxy: &#123;<br>      // detail: https://cli.vuejs.org/config/#devserver-proxy<br>      [process.env.VUE_APP_BASE_API]: &#123;<br>        target: `http://localhost:8080`,  <span class="hljs-comment">#连接网关地址及端口</span><br></code></pre></td></tr></table></figure>
+
+<p>切换到UI目录</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local RuoYi-Cloud-master]# <span class="hljs-built_in">cd</span> ruoyi-ui/<br></code></pre></td></tr></table></figure>
+
+<p>指定依赖库地址，需要先下载项目的依赖</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ruoyi-ui]# npm install --registry=https://registry.npmmirror.com<br></code></pre></td></tr></table></figure>
+
+<p>构建项目</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ruoyi-ui]# npm run build:prod<br></code></pre></td></tr></table></figure>
+
+<p><strong>如果构建项目时报错</strong>：error:0308010C:digital envelope routines::unsupported</p>
+<p>主要是因为 nodeJs V17 版本发布了 OpenSSL3.0 对算法和秘钥大小增加了更为严格的限制，nodeJs v17 之前版本没影响，但 V17 和之后版本会出现这个错误。</p>
+<p>输入以下以下命令，强制Node.js使用旧版本的OpenSSL库，以解决与新版本Node.js中加密库不兼容的问题。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">export</span> NODE_OPTIONS=--openssl-legacy-provider<br></code></pre></td></tr></table></figure>
+
+<p>编译打包项目</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ruoyi-ui]# npm run build:prod<br></code></pre></td></tr></table></figure>
+
+<p>打包成功后，会生成一个名为 dist 目录，里边就是前端页面文件，将页面文件放到nginx对应的发布项目目录（比如html目录）即可。</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/2e7d46f968c04841b30f6e5d64f3444c.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p><strong>部署Nginx发布UI（就在当前节点部署即可）</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local dist]# apt install nginx -y<br></code></pre></td></tr></table></figure>
+
+<p>准备UI站点配置文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local conf.d]# vim /etc/nginx/conf.d/ruoyi.conf <br>server &#123;<br>    listen       80;<br>    server_name  localhost;<br><br>        location / &#123;<br>            root   /usr/share/nginx/ruoyi-ui;<br>            try_files <span class="hljs-variable">$uri</span> <span class="hljs-variable">$uri</span>/ /index.html;<br>            index  index.html index.htm;<br>        &#125;<br><br>        location /prod-api/&#123;<br>            proxy_set_header Host <span class="hljs-variable">$http_host</span>;<br>            proxy_set_header X-Real-IP <span class="hljs-variable">$remote_addr</span>;<br>            proxy_set_header REMOTE-HOST <span class="hljs-variable">$remote_addr</span>;<br>            proxy_set_header X-Forwarded-For <span class="hljs-variable">$proxy_add_x_forwarded_for</span>;<br>            proxy_pass http://localhost:8080/;<br>        &#125;<br><br>        <span class="hljs-comment"># 避免actuator暴露</span><br>        <span class="hljs-keyword">if</span> (<span class="hljs-variable">$request_uri</span> ~ <span class="hljs-string">&quot;/actuator&quot;</span>) &#123;<br>            <span class="hljs-built_in">return</span> 403;<br>        &#125;<br><br>    error_page   500 502 503 504  /50x.html;<br>    location = /50x.html &#123;<br>        root   html;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>创建目录拷贝&#x2F;dist目录下代码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@ruoyi-demo ruoyi-ui]# <span class="hljs-built_in">mkdir</span> /usr/share/nginx/ruoyi-ui<br>[root@ruoyi-demo ruoyi-ui]# <span class="hljs-built_in">cp</span> -r dist/* /usr/share/nginx/ruoyi-ui<br></code></pre></td></tr></table></figure>
+
+<p>启动Nginx</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local conf.d]# systemctl <span class="hljs-built_in">enable</span> nginx --now<br></code></pre></td></tr></table></figure>
+
+<p>Windows配置本地解析</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">C:\Windows\System32\drivers\etc\hosts<br>192.1.7.244 cherry.nuoyi.com<br></code></pre></td></tr></table></figure>
+
+<p>访问</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">url：http://cherry.nuoyi.com/login?redirect=%2Findex<br>账号：admin<br>密码：admin123<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/2d6fcdae20cc4f3fa3a5f986251df64e.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<h1 id="五、更新特定模块"><a href="#五、更新特定模块" class="headerlink" title="五、更新特定模块"></a>五、更新特定模块</h1><p>更新ruoyi-auth模块，修改登录时的提示信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local RuoYi-Cloud-master]# vim /root/RuoYi-Cloud/ruoyi-auth/src/main/java/com/ruoyi/auth/service/SysLoginService.java<br><span class="hljs-comment">#...</span><br>        &#123;<br>            recordLogService.recordLogininfor(username, Constants.LOGIN_FAIL, <span class="hljs-string">&quot;登录用户不存在&quot;</span>);<br>            throw new ServiceException(<span class="hljs-string">&quot;输入的用户名：&quot;</span> + username + <span class="hljs-string">&quot; 不存在&quot;</span>);<br>        &#125;<br></code></pre></td></tr></table></figure>
+
+<p>重新打包ruoyi-auth模块</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">命令说明：<br>-pl		//需要构建的目录<br>-am		//同时构建该模块依赖的其他模块<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local RuoYi-Cloud-master]# <span class="hljs-built_in">cd</span> RuoYi-Cloud/<br>mvn package -Dmaven.test.skip=<span class="hljs-literal">true</span> -pl ruoyi-auth -am<br>===========================================================<br>[INFO] ruoyi .............................................. SUCCESS [  1.266 s]<br>[INFO] ruoyi-common ....................................... SUCCESS [  0.001 s]<br>[INFO] ruoyi-common-core .................................. SUCCESS [  1.962 s]<br>[INFO] ruoyi-api .......................................... SUCCESS [  0.001 s]<br>[INFO] ruoyi-api-system ................................... SUCCESS [  0.051 s]<br>[INFO] ruoyi-common-redis ................................. SUCCESS [  0.128 s]<br>[INFO] ruoyi-common-security .............................. SUCCESS [  0.056 s]<br>[INFO] ruoyi-auth ......................................... SUCCESS [  3.560 s]<br></code></pre></td></tr></table></figure>
+
+<p><strong>提示：</strong>同一个项目中，如果其他服务依赖于被更新的服务， 那么在更新这个服务时，也会重新打包和部署那些相关的服务。</p>
+<p>停止ruoyi-auth重新运行</p>
+<p>jps命令是java的命令行工具，用于列出正在运行的Java进程信息 </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local RuoYi-Cloud-master]# jps<br>315905 ruoyi-modules-system.jar<br>318947 Jps<br>212244 nacos-server.jar<br>303327 ruoyi-visual-monitor.jar<br>301785 ruoyi-gateway.jar<br>301082 ruoyi-auth.jar<br><br>[root@node1.local RuoYi-Cloud-master]# <span class="hljs-built_in">kill</span> 301082<br></code></pre></td></tr></table></figure>
+
+<p>重新启动ruoyi-auth模块</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">java -Dspring.profiles.active=dev \<br>-Dspring.cloud.nacos.config.file-extension=yml \<br>-Dspring.cloud.nacos.discovery.server-addr=192.1.7.244:8848 \<br>-Dspring.cloud.nacos.config.server-addr=192.1.7.244:8848 \<br>-jar /root/RuoYi-Cloud/RuoYi-Cloud-master/ruoyi-auth/target/ruoyi-auth.jar &amp;&gt; /var/log/ruoyi-auth.log &amp;<br></code></pre></td></tr></table></figure>
+
+<p>登录ruoyi页面，输入一个不存在的用户来验证更新结果<br><img src="https://gitee.com/ljh00928/csdn/raw/master/img/7593fcbf6cff4ce99620601c07370148.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/" class="category-chain-item">云原生</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/k8s/" class="print-no-link">#k8s</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>RuoYi-Cloud微服务项目部署</div>
+      <div>http://example.com/2025/04/18/RuoYi-Cloud微服务项目部署/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>淡黄的cherry</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/18/istio%E5%85%A5%E9%97%A8%E7%AF%87%EF%BC%88%E4%B8%80%EF%BC%89/" title="istio入门篇（一）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">istio入门篇（一）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/18/Spring-Cloud-Nacos-K8S-%E9%9B%B6%E5%BD%B1%E5%93%8D%E5%8F%91%E5%B8%83%E6%96%B9%E6%A1%88Spring-Cloud-Nacos-K8S-%E9%9B%B6%E5%BD%B1%E5%93%8D%E5%8F%91%E5%B8%83%E6%96%B9%E6%A1%88/" title="Spring Cloud + Nacos + K8S 零影响发布方案Spring Cloud + Nacos + K8S 零影响发布方案">
+                        <span class="hidden-mobile">Spring Cloud + Nacos + K8S 零影响发布方案Spring Cloud + Nacos + K8S 零影响发布方案</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  <div>
+    <span id="timeDate">正在载入天数...</span>
+    <span id="times">载入时分秒...</span>
+    <script>
+    var now = new Date();
+    function createtime(){
+        var grt= new Date("08/17/2020 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24;
+        dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum);
+        hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){
+            hnum = "0" + hnum;
+        }
+        minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes);
+        if(String(mnum).length ==1 ){
+                  mnum = "0" + mnum;
+        }
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds);
+        if(String(snum).length ==1 ){
+                  snum = "0" + snum;
+        }
+        document.getElementById("timeDate").innerHTML = "🚀已持续航行&nbsp"+dnum+"&nbsp天";  
+        document.getElementById("times").innerHTML = hnum + "&nbsp时&nbsp" + mnum + "&nbsp分&nbsp" + snum + "&nbsp秒";
+    }
+    setInterval("createtime()",250);
+    </script>
+  </div>
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom.js"></script>
+<script src="/js/snow.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
