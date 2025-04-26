@@ -1,0 +1,919 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/2.png">
+  <link rel="icon" href="/img/2.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="淡黄的cherry">
+  <meta name="keywords" content="">
+  <meta name="referrer" content="no-referrer">
+  
+    <meta name="description" content="一、分布式存储概述1.存储分类存储分为封闭系统的存储和开放系统的存储，而对于开放系统的存储又被分为内置存储和外挂存储。 外挂存储又被细分为直连式存储(DAS)和网络存储(FAS)，而网络存储又被细分网络接入存储(NAS)和存储区域网络(SAN)等。  DAS(Direct-attached Storage): 直连存储,即直接连接到主板的总线上去的，我们可以对这些设备进行格式化操作。 典型代表有：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ceph基本概念，架构，部署（一）">
+<meta property="og:url" content="http://example.com/2025/04/18/ceph%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%EF%BC%8C%E6%9E%B6%E6%9E%84%EF%BC%8C%E9%83%A8%E7%BD%B2%EF%BC%88%E4%B8%80%EF%BC%89/index.html">
+<meta property="og:site_name" content="cherry">
+<meta property="og:description" content="一、分布式存储概述1.存储分类存储分为封闭系统的存储和开放系统的存储，而对于开放系统的存储又被分为内置存储和外挂存储。 外挂存储又被细分为直连式存储(DAS)和网络存储(FAS)，而网络存储又被细分网络接入存储(NAS)和存储区域网络(SAN)等。  DAS(Direct-attached Storage): 直连存储,即直接连接到主板的总线上去的，我们可以对这些设备进行格式化操作。 典型代表有：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/7223093e4dcf42e2bccc4fb68f1b20bc.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/78357d84266d4f84beda5f35114fee04.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/8ebc5de0fb864a0faaf77fc9ce1ed241.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/d8bc4b3fa3d64fe4bae0d2f10d8fd793.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/a9a132418ceb480bb08be115eb61e6b3.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/038eb48ccda14b42850eecf189954af4.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/aae334b455d4499f9f9ae16bc55f9079.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/20434c5525c6446bab47ddf615323b83.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/4ae5a691f6e9475daad597f3f5f27df5.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/3c11920a7a494e2fb3fee931d9ea4653.png">
+<meta property="article:published_time" content="2025-04-18T03:14:44.000Z">
+<meta property="article:modified_time" content="2025-04-18T03:18:12.151Z">
+<meta property="article:author" content="淡黄的cherry">
+<meta property="article:tag" content="Ceph">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/7223093e4dcf42e2bccc4fb68f1b20bc.png">
+  
+  
+  
+  <title>ceph基本概念，架构，部署（一） - cherry</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/macpanel.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong class="navbar-title">cherryの技术文档</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="ceph基本概念，架构，部署（一）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-18 11:14" pubdate>
+          2025年4月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          44 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">ceph基本概念，架构，部署（一）</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="一、分布式存储概述"><a href="#一、分布式存储概述" class="headerlink" title="一、分布式存储概述"></a>一、分布式存储概述</h2><h3 id="1-存储分类"><a href="#1-存储分类" class="headerlink" title="1.存储分类"></a>1.存储分类</h3><p>存储分为<strong>封闭系统的存储</strong>和<strong>开放系统的存储</strong>，而对于开放系统的存储又被分为<strong>内置存储</strong>和<strong>外挂存储</strong>。</p>
+<p>外挂存储又被细分为直连式存储(DAS)和网络存储(FAS)，而网络存储又被细分网络接入存储(NAS)和存储区域网络(SAN)等。</p>
+<ul>
+<li><p>DAS(Direct-attached Storage): 直连存储,即直接连接到主板的总线上去的，我们可以对这些设备进行格式化操作。 典型代表有：IDE，SATA，SCSI，SAS，USB等。</p>
+</li>
+<li><p>SAN(Storage Area Network): 存储区域网络，是一个网络上的磁盘。它提供的一个块设备而非文件系统。 早期是通过SCSI协议传输数据，后来设计通过光纤通道交换机连接存储阵列和服务器主机，也称为FC SAN，当然也可以基于以太网传输，我们称之为ISCSI协议。</p>
+</li>
+<li><p>NAS(Network Attached Storage): 网络附加存储，是一个网络上的文件系统，我们无法进行格式化操作。典型代表有：NFS，CIFS等。</p>
+</li>
+</ul>
+<p>专门的存储厂商可以通过RAID技术来实现数据的高效存储，国内外很多企业都有自己的存储设备，例如EMC,NetApp,IBM,惠普，Dell，爱数等。</p>
+<p>但是这些专业的存储设备不仅价格是非常昂贵的，而且是非常重的，大多数都是基于FC SAN，ISCSI或者NAS访问接口，所以在某种意义上将他们的存储能力和扩展能力是非常有限的，这个时候我们就需要一个能够实现横向存储的分布式存储。</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/7223093e4dcf42e2bccc4fb68f1b20bc.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h3 id="2-存储系统的分类"><a href="#2-存储系统的分类" class="headerlink" title="2.存储系统的分类"></a>2.存储系统的分类</h3><ul>
+<li><p>块存储系统: 通常对应的是一个裸设备，比如一块磁盘，我们需要格式化后进行挂载方能使用。 代表产品: lvm，cinder。</p>
+</li>
+<li><p>文件系统存储系统: 文件系统只是数据组织存放的接口。文件系统通常是构建在一个块存储级别之上。 文件系统被分为元数据区域和数据区域，对于用户而言，它呈现为一个树形结构(实际上提供的是一个目录)。 代表产品: NFS，glusterfs。</p>
+</li>
+<li><p>对象存储系统: 对象存储并没有向文件系统那样划分为元数据区域和数据区域，而是按照不同的对象进行存储，而且每个对象内部维护着元数据和数据区域。因此每个对象都有自己独立的管理格式。 代表产品: Fastdfs，swift。</p>
+</li>
+</ul>
+<p><strong>补充知识：</strong></p>
+<p>为什么网速很慢，上传10T这种大文件确很快？</p>
+<p>因为每一个文件都有独有的hash值，就是我们上传文件时，系统去扫描文件的<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=451076183&content_type=Answer&match_order=1&q=%E5%93%88%E5%B8%8C%E7%A0%81&zhida_source=entity">哈希码</a>并保存在数据库中，每个文件（包括其副本）的哈希码都是独一无二的，就是说，如果哈希码相同，我们可以定义为是同一个文件。接下来就简单了，上传时判断哈希码，如果数据库里有相同的哈希码就说明这个文件在云端有一摸一样的副本了，直接显示上传完成就可以了，文件并没有被真实上传，你的等待时间是计算哈希码的时间。如果在云端没有相同哈希码的文件，系统再老老实实上传。</p>
+<p>而修改文件名并不会改变hash值，不要不更改文件内容，哈希码就不会改变。所以可以实现秒传的技术。</p>
+<p>文件哈希码的特性使哈希码用途很广泛，因为用哈希码可以标定所有相同的文件。除了秒传、去重等功能，还可以用在判断文件是否更新、统一阻止违规文件传播、统一删除文件上上传文件等</p>
+<p>如果多个用户拥有相同资源，实际上远程存储服务器也只是存储一份，如果我们本地删除改文件，其实也是删除软连接，远端存储服务器的数据并不会删除。所有也并不会影响其他用户访问。所有大家在网盘上传隐私性较强的东西一定要谨慎~</p>
+<h2 id="二、Ceph分布式存储系统概述"><a href="#二、Ceph分布式存储系统概述" class="headerlink" title="二、Ceph分布式存储系统概述"></a>二、Ceph分布式存储系统概述</h2><p>Ceph 是一个开源的分布式存储系统，旨在提供高性能、高可扩展性和高可靠性的存储解决方案。它能够通过统一的存储平台同时支持块存储、对象存储和文件存储。Ceph 是一个去中心化的系统，能够在大规模分布式环境中工作，广泛应用于云计算和大数据处理领域。</p>
+<p><strong>特点</strong></p>
+<ul>
+<li>高可扩展性：Ceph 能够动态扩展，随着更多的存储节点的加入，集群的容量和性能也能够得到相应的扩展。</li>
+<li>高可靠性：Ceph 使用 CRUSH 算法来实现数据的分布式存储和副本管理，从而确保数据的高可靠性。当某个节点发生故障时，Ceph 可以自动恢复丢失的数据。</li>
+<li>自我修复：Ceph 会自动检测节点故障并进行数据恢复，确保数据的高可用性。</li>
+<li>灵活性：Ceph 可以同时提供块存储、对象存储和文件存储服务，适应多种存储需求。</li>
+<li>性能优化：Ceph 使用对象存储和 CRUSH 算法来优化存储性能，支持高吞吐量和低延迟的存储需求。</li>
+</ul>
+<h3 id="1-Ceph-组件"><a href="#1-Ceph-组件" class="headerlink" title="1.Ceph 组件"></a>1.Ceph 组件</h3><p><strong>Ceph OSD (Object Storage Daemon)</strong></p>
+<ul>
+<li><strong>作用</strong>：负责存储数据和处理数据的复制、恢复、重平衡等操作。每个 OSD 进程通常对应一个物理硬盘或磁盘阵列。</li>
+<li><strong>功能</strong>：数据存储、数据复制、数据重建和故障转移等。OSD 是 Ceph 集群的工作核心。</li>
+</ul>
+<p><strong>Ceph MON (Monitor)</strong></p>
+<ul>
+<li><strong>作用</strong>：监控 Ceph 集群的健康状况，维护集群的元数据，并确保集群的一致性。MON 节点管理集群状态信息、存储池、OSD 设备等元数据。</li>
+<li><strong>功能</strong>：提供集群的状态信息，处理客户端和 OSD 之间的交互，确保集群的一致性和健康状态。</li>
+</ul>
+<p><strong>Ceph MDS (Metadata Server)</strong></p>
+<ul>
+<li><strong>作用</strong>：仅在 Ceph 用作文件系统（CephFS）时使用，负责处理文件系统的元数据管理，如文件目录结构、文件权限、文件名等。</li>
+<li><strong>功能</strong>：在 CephFS 中管理目录、文件元数据和锁，并提供文件访问接口。</li>
+</ul>
+<p><strong>Ceph Client</strong></p>
+<ul>
+<li><strong>作用</strong>：客户端是与 Ceph 集群交互的应用程序或系统，进行数据存储、访问、管理等操作。</li>
+<li><strong>功能</strong>：客户端可以是使用 Ceph 提供的不同接口进行操作的应用，例如 Ceph RBD（块存储）、CephFS（文件存储）等。</li>
+</ul>
+<p><strong>Ceph RGW (Rados Gateway)</strong></p>
+<ul>
+<li><strong>作用</strong>：Rados Gateway 提供与 Ceph 集群的对象存储服务的接口，支持通过 HTTP 协议访问存储的数据，兼容 S3 和 OpenStack Swift API。</li>
+<li><strong>功能</strong>：允许对象存储服务的访问和管理，提供 RESTful 接口，适用于云存储服务和大数据应用等。</li>
+</ul>
+<p><strong>CRUSH (Controlled Replication Under Scalable Hashing)</strong></p>
+<ul>
+<li><strong>作用</strong>：CRUSH 是 Ceph 的数据分布和复制算法，用于决定数据如何在 OSD 之间分配和存储，避免中央元数据服务的瓶颈。</li>
+<li><strong>功能</strong>：实现数据的分布式存储和复制策略，确保数据冗余和高可用性。</li>
+</ul>
+<p><strong>Ceph Pools</strong></p>
+<ul>
+<li><strong>作用</strong>：池是 Ceph 中用于存储数据的逻辑分区，每个池有不同的设置和配置，如副本数量、对象大小等。</li>
+<li><strong>功能</strong>：用于数据存储和隔离，支持不同的存储策略（例如，块存储、对象存储等）。</li>
+</ul>
+<p><strong>Ceph Dashboard (可选)</strong></p>
+<ul>
+<li><strong>作用</strong>：提供 Ceph 集群的 Web 界面，供管理员查看集群的状态、健康状况、性能指标、配置等。</li>
+<li><strong>功能</strong>：集群监控和管理界面，支持查看集群健康、性能、日志等信息。</li>
+</ul>
+<p><strong>Ceph RBD (Rados Block Device)</strong></p>
+<ul>
+<li><strong>作用</strong>：Ceph 提供的块存储服务，允许客户端将 Ceph 集群作为块设备挂载到操作系统中，适用于虚拟化存储或数据库等应用场景。</li>
+<li><strong>功能</strong>：提供与传统块设备（如 iSCSI）类似的功能，但具有 Ceph 集群的可扩展性和容错性。</li>
+</ul>
+<p><strong>CephFS (Ceph File System)</strong></p>
+<ul>
+<li><strong>作用</strong>：Ceph 的文件系统接口，允许将 Ceph 集群作为一个分布式文件系统进行访问。</li>
+<li><strong>功能</strong>：提供 POSIX 兼容的文件系统，支持多客户端并发访问，适用于高性能计算、大数据处理等应用场景。</li>
+</ul>
+<p><strong>总结：</strong></p>
+<ul>
+<li><strong>OSD</strong>：处理数据存储和复制。</li>
+<li><strong>MON</strong>：监控集群状态和元数据管理。</li>
+<li><strong>MDS</strong>：管理 CephFS 文件系统的元数据。</li>
+<li><strong>RGW</strong>：提供对象存储接口。</li>
+<li><strong>CRUSH</strong>：数据分布和复制算法。</li>
+<li><strong>Pools</strong>：逻辑存储池，用于数据组织。</li>
+<li><strong>Client</strong>：与集群交互的客户端应用程序。</li>
+<li><strong>RBD</strong>：块存储服务。</li>
+<li><strong>CephFS</strong>：分布式文件系统。</li>
+<li><strong>Dashboard</strong>：集群管理和监控界面。</li>
+</ul>
+<h3 id="2-Ceph逻辑单元"><a href="#2-Ceph逻辑单元" class="headerlink" title="2.Ceph逻辑单元"></a>2.Ceph逻辑单元</h3><ul>
+<li>pool（池）：pool是Ceph存储数据时的逻辑分区，它起到namespace的作用，在集群层面的逻辑切割。每个pool包含一定数量(可配置)的PG。</li>
+<li>PG（Placement Group）：PG是一个逻辑概念，每个对象都会固定映射进一个PG中，所以当我们要寻找一个对象时，只需要先找到对象所属的PG，然后遍历这个PG就可以了，无需遍历所有对象。而且在数据迁移时，也是以PG作为基本单位进行迁移。PG的副本数量也可以看作数据在整个集群的副本数量。一个PG 包含多个 OSD 。引入 PG 这一层其实是为了更好的分配数据和定位数据。</li>
+<li>OID：存储的数据都会被切分成对象（Objects）。每个对象都会有一个唯一的OID，由ino与ono生成，ino即是文件的File ID，用于在全局唯一标示每一个文件，而ono则是分片的编号，OID &#x3D; ( ino + ono )&#x3D; (File ID + File part number)，例如File Id &#x3D; A，有两个分片，那么会产生两个OID，A01与A02。</li>
+<li>PgID：首先使用静态hash函数对OID做hash取出特征码，用特征码与PG的数量去模，得到的序号则是PGID。</li>
+<li>Object：Ceph最底层的存储单元是 Object对象，每个 Object 包含元数据和原始数据</li>
+</ul>
+<h3 id="3-pool、PG、OSD-关系"><a href="#3-pool、PG、OSD-关系" class="headerlink" title="3.pool、PG、OSD 关系"></a>3.pool、PG、OSD 关系</h3><p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/78357d84266d4f84beda5f35114fee04.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<ul>
+<li>一个Pool里有很多PG，</li>
+<li>一个PG里包含一堆对象；一个对象只能属于一个PG；</li>
+<li>PG有主从之分，一个PG分布在不同的OSD上（针对三副本类型）</li>
+</ul>
+<h2 id="三、Ceph-设计"><a href="#三、Ceph-设计" class="headerlink" title="三、Ceph 设计"></a>三、Ceph 设计</h2><h3 id="1-整体设计"><a href="#1-整体设计" class="headerlink" title="1.整体设计"></a>1.整体设计</h3><p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/8ebc5de0fb864a0faaf77fc9ce1ed241.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><strong>基础存储系统 RADOS</strong></p>
+<p>Reliable, Autonomic,Distributed Object Store，即可靠的、自动化的、分布式的对象存储</p>
+<p>这就是一个完整的对象存储系统，所有存储在 Ceph 系统中的用户数据事实上最终都是由这一层来存储的。而 Ceph 的高可靠、高可扩展、高性能、高自动化等等特性本质上也是由这一层所提供的</p>
+<p><strong>基础库 librados</strong></p>
+<p>这层的功能是对 RADOS 进行抽象和封装，并向上层提供 API，以便直接基于 RADOS（而不是整个 Ceph）进行应用开发。特别要注意的是，RADOS 是一个对象存储系统，因此，librados 实现的 API 也只是针对对象存储功能的。RADOS 采用 C++ 开发，所提供的原生 librados API 包括 C 和 C++ 两种。</p>
+<p><strong>高层应用接口</strong></p>
+<p>这层包括了三个部分：RADOS GW（RADOS Gateway）、 RBD（Reliable Block Device）和 Ceph FS（Ceph File System），其作用是在 librados 库的基础上提供抽象层次更高、更便于应用或客户端使用的上层接口。其中，RADOS GW 是一个提供与 Amazon S3 和 Swift 兼容的 RESTful API 的 gateway，以供相应的对象存储应用开发使用。RADOS GW 提供的 API 抽象层次更高，但功能则不如 librados 强大。</p>
+<p><strong>应用层</strong></p>
+<p>这层是不同场景下对于 Ceph 各个应用接口的各种应用方式，例如基于 librados 直接开发的对象存储应用，基于 RADOS GW 开发的对象存储应用，基于 RBD 实现的云硬盘等等。librados 和 RADOS GW 的区别在于，librados 提供的是本地 API，而 RADOS GW 提供的则是 RESTfulAPI。</p>
+<p>由于 Swift 和 S3 支持的 API 功能近似，这里以 Swift 举例说明。Swift 提供的 API 功能主要包括：</p>
+<ul>
+<li>用户管理操作：用户认证、获取账户信息、列出容器列表等；</li>
+<li>容器管理操作：创建 &#x2F; 删除容器、读取容器信息、列出容器内对象列表等；</li>
+<li>对象管理操作：对象的写入、读取、复制、更新、删除、访问许可设置、元数据读取或更新等</li>
+</ul>
+<h3 id="2-逻辑架构"><a href="#2-逻辑架构" class="headerlink" title="2.逻辑架构"></a>2.逻辑架构</h3><p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/d8bc4b3fa3d64fe4bae0d2f10d8fd793.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h3 id="3-Ceph物理组件架构"><a href="#3-Ceph物理组件架构" class="headerlink" title="3.Ceph物理组件架构"></a>3.Ceph物理组件架构</h3><p>RADOS是Ceph的核心，我们谈及的物理组件架构也只是RADOS的物理架构。</p>
+<p>RADOS集群是由若干服务器组成，每一个服务器上都相应会运行RADOS的核心守护进程（OSD、MON、MDS）。具体守护进程的数量需要根据集群的规模和既定的规则来配置。</p>
+<p> <img src="https://gitee.com/ljh00928/csdn/raw/master/img/a9a132418ceb480bb08be115eb61e6b3.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>我们首先来看每一个集群节点上面的守护进程的主要作用：</p>
+<p><strong>OSD Daemon</strong>：两方面主要作用，一方面负责数据的处理操作，另外一方面负责监控本身以及其他OSD进程的健康状态并汇报给MON。OSD守护进程在每一个PG（Placement Group）当中，会有主次（Primary、Replication）之分，Primary主要负责数据的读写交互，Replication主要负责数据副本的复制。其故障处理机制主要靠集群的Crush算法来维持Primary和Replication之间的转化和工作接替。所有提供磁盘的节点上都要安装OSD 守护进程。</p>
+<p><strong>MON Daemon</strong>：三方面主要作用，首先是监控集群的全局状态（OSD Daemon Map、MON Map、PG Map、Crush Map），这里面包括了OSD和MON组成的集群配置信息，也包括了数据的映射关系。其次是管理集群内部状态，当OSD守护进程故障之后的系列恢复工作，包括数据的复制恢复。最后是与客户端的查询及授权工作，返回客户端查询的元数据信息以及授权信息。安装节点数目为2N+1，至少三个来保障集群算法的正常运行。</p>
+<p><strong>MDS Daemon</strong>：它是Ceph FS的元数据管理进程，主要是负责文件系统的元数据管理，它不需要运行在太多的服务器节点上。安装节点模式保持主备保护即可</p>
+<h3 id="4-Ceph数据对象组成"><a href="#4-Ceph数据对象组成" class="headerlink" title="4.Ceph数据对象组成"></a>4.Ceph数据对象组成</h3><p>从客户端发出的一个文件请求，到Rados存储系统写入的过程当中会涉及到哪些逻辑对象，他们的关系又是如何的？首先，我们先来列出这些对象：</p>
+<p>（1）文件（FILE）：用户需要存储或者访问的文件。对于一个基于Ceph开发的对象存储应用而言，这个文件也就对应于应用中的“对象”，也就是用户直接操作的“对象”。</p>
+<p>（2）对象（Object）：RADOS所看到的“对象”。Object指的是最大size由RADOS限定（通常为2&#x2F;4MB）之后RADOS直接进行管理的对象。因此，当上层应用向RADOS存入很大的file时，需要将file切分进行存储。</p>
+<p>（3）PG（Placement Group）：PG是一个逻辑概念，阐述的是Object和OSD之间的地址映射关系，该集合里的所有对象都具有相同的映射策略；Object &amp; PG，N：1的映射关系；PG &amp; OSD，1：M的映射关系。一个Object只能映射到一个PG上，一个PG会被映射到多个OSD上。</p>
+<p>（4）OSD（Object Storage Device）：存储对象的逻辑分区，它规定了数据冗余的类型和对应的副本分布策略；支持两种类型：副本和纠删码。</p>
+<p>接下来，我们以更直观的方式来展现在Ceph当中数据是如何组织起来的：</p>
+<p> <img src="https://gitee.com/ljh00928/csdn/raw/master/img/038eb48ccda14b42850eecf189954af4.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>（1） File &gt; Object</p>
+<p>本次映射为首次映射，即将用户要操作的File，映射为RADOS能够处理的Object。</p>
+<p>具体映射操作本质上就是按照Object的最大Size对File进行切分，每一个切分后产生的Object将获得唯一的对象标识Oid。Oid的唯一性必须得到保证，否则后续映射就会出现问题。</p>
+<p>（2） Object &gt; PG</p>
+<p>完成从File到Object的映射之后， 就需要将每个 Object 独立地映射到 唯一的 PG 当中 去。</p>
+<p>Hash（Oid）&amp; Mask &gt; PGid</p>
+<p>根据以上算法， 首先是使用Ceph系统指定的一个静态哈希函数计算 Oid 的哈希值，将 Oid 映射成为一个近似均匀分布的伪随机值。然后，将这个伪随机值和 Mask 按位相与，得到最终的PG序号（ PG id）。根据RADOS的设计，给定PG的总数为 X（X&#x3D; 2的整数幂）， Mask&#x3D;X-1 。因此，哈希值计算和按位与操作的整体结果事实上是从所有 X 个PG中近似均匀地随机选择一个。基于这一机制，当有大量object和大量PG时，RADOS能够保证object和PG之间的近似均匀映射。</p>
+<p>（3） PG &gt; OSD</p>
+<p>最后的 映射就是将PG映射到数据存储单元OSD。RADOS采用一个名为CRUSH的算法，将 PGid 代入其中，然后得到一组共 N 个OSD。这 N 个OSD即共同负责存储和维护一个PG中的所有 Object 。和“object -&gt; PG”映射中采用的哈希算法不同，这个CRUSH算法的结果不是绝对不变的，而是受到其他因素的影响。</p>
+<p>① 集群状态（Cluster Map）：系统中的OSD状态 。数量发生变化时， CLuster Map 可能发生变化，而这种变化将会影响到PG与OSD之间的映射。</p>
+<p>② 存储策略配置。系统管理员可以指定承载同一个PG的3个OSD分别位于数据中心的不同服务器乃至机架上，从而进一步改善存储的可靠性。</p>
+<p>到这里，可能大家又会有一个问题“为什么这里要用CRUSH算法，而不是HASH算法？”</p>
+<p>这一次映射，我们对映射算法有两种要求：</p>
+<p>一方面，算法必须能够随着系统的节点数量位置的变化，而具备动态调整特性，保障在变化的环境当中仍然可以保持数据分布的均匀性；另外一方面还要有相对的稳定性，也就是说大部分的映射关系不会因为集群的动态变化发生变化，保持一定的稳定性。</p>
+<p>而CRUSH算法正是符合了以上的两点要求，所以最终成为Ceph的核心算法。</p>
+<h2 id="四、ceph-数据存储过程"><a href="#四、ceph-数据存储过程" class="headerlink" title="四、ceph 数据存储过程"></a>四、ceph 数据存储过程</h2><p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/aae334b455d4499f9f9ae16bc55f9079.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>如果我们想要将数据存储到ceph集群，那么大致步骤如下所示:</p>
+<ul>
+<li>Rados Cluster集群固定大小的object可能不符合我们要存储某个大文件，因此一个大文件想要存储到ceph集群，它可能会被拆分成多个data object对象进行存储;</li>
+<li>通常情况下data object请求向某个pool存储数据时，通过CRUSH算法会先对data object进行一致性哈希计算，而后将存储任务映射到到该pool中的某个PG上;</li>
+<li>紧接着，CRUSH算法(是用来完成object存储路由的一个算法)会根据pool的冗余副本数量和data object的存储类型找到足量的OSD进行存储，当然对应的PG是有active PG和standby PG角色之分的，通常副本数我们会设置为3;</li>
+</ul>
+<h2 id="五、ceph集群部署"><a href="#五、ceph集群部署" class="headerlink" title="五、ceph集群部署"></a>五、ceph集群部署</h2><h3 id="1-集群环境准备"><a href="#1-集群环境准备" class="headerlink" title="1.集群环境准备"></a>1.集群环境准备</h3><table>
+<thead>
+<tr>
+<th>主机名</th>
+<th>ip</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ceph141</td>
+<td>10.0.0.141</td>
+<td>1c2G，300GB ，500GB</td>
+</tr>
+<tr>
+<td>ceph142</td>
+<td>10.0.0.142</td>
+<td>1c2G，300GB ，500GB</td>
+</tr>
+<tr>
+<td>ceph143</td>
+<td>10.0.0.143</td>
+<td>1c2G，300GB ，500GB</td>
+</tr>
+</tbody></table>
+<p> <strong>ceph所有节点基础环境准备</strong></p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs crystal">基于cephadm部署前提条件，官方提的要求Ubuntu <span class="hljs-number">22.04</span> LTS出了容器运行时其他都满足<br>			- Python <span class="hljs-number">3</span><br>			- Systemd<br>			- Podman or Docker <span class="hljs-keyword">for</span> running containers<br>			- Time synchronization (such <span class="hljs-keyword">as</span> Chrony or the legacy ntpd)<br>			- LVM2 <span class="hljs-keyword">for</span> provisioning storage devices<br>			<br>参考链接:<br>	<span class="hljs-symbol">https:</span>/<span class="hljs-regexp">/docs.ceph.com/en</span><span class="hljs-regexp">/latest/cephadm</span><span class="hljs-regexp">/install/</span><span class="hljs-comment">#requirements</span><br></code></pre></td></tr></table></figure>
+
+<p> <strong>设置时区</strong></p>
+<figure class="highlight dsconfig"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs dsconfig"><span class="hljs-string">timedatectl</span> <span class="hljs-built_in">set-timezone</span> <span class="hljs-string">Asia</span>/<span class="hljs-string">Shanghai</span><br><span class="hljs-string">ll</span> /<span class="hljs-string">etc</span>/<span class="hljs-string">localtime</span><br></code></pre></td></tr></table></figure>
+
+<p> <strong>安装docker环境</strong></p>
+<p>关于docker安装脚本可参考我这篇博文：<a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_69326428/article/details/144375315">kubeadm 部署k8s-CSDN博客</a></p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus">tar xf autoinstall-docker-docker-compose<span class="hljs-selector-class">.tar</span><span class="hljs-selector-class">.gz</span> <br>./install-docker<span class="hljs-selector-class">.sh</span> i<br></code></pre></td></tr></table></figure>
+
+<p> <strong>添加hosts文件解析</strong></p>
+<figure class="highlight accesslog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs accesslog">cat &gt;&gt; /etc/hosts &lt;&lt;EOF<br><span class="hljs-number">10.0.0.141</span> ceph141<br><span class="hljs-number">10.0.0.142</span> ceph142<br><span class="hljs-number">10.0.0.143</span> ceph143<br>EOF<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-cephadm部署初始化新集群"><a href="#2-cephadm部署初始化新集群" class="headerlink" title="2.cephadm部署初始化新集群"></a>2.cephadm部署初始化新集群</h3><p><strong>下载需要安装ceph版本的cephadm</strong></p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs autoit">[root<span class="hljs-symbol">@ceph141</span> ~]<span class="hljs-meta"># CEPH_RELEASE=18.2.4</span><br>[root<span class="hljs-symbol">@ceph141</span> ~]<span class="hljs-meta"># curl --silent --remote-name --location https://download.ceph.com/rpm-$&#123;CEPH_RELEASE&#125;/el9/noarch/cephadm</span><br></code></pre></td></tr></table></figure>
+
+<p> <strong>将cephadm添加到PATH环境变量</strong></p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs swift">[root<span class="hljs-meta">@ceph141</span> <span class="hljs-operator">~</span>]# mv cephadm <span class="hljs-regexp">/usr/</span>local<span class="hljs-regexp">/bin/</span><br>[root<span class="hljs-meta">@ceph141</span> <span class="hljs-operator">~</span>]# <br>[root<span class="hljs-meta">@ceph141</span> <span class="hljs-operator">~</span>]# chmod <span class="hljs-operator">+</span>x <span class="hljs-regexp">/usr/</span>local<span class="hljs-regexp">/bin/</span>cephadm <br>[root<span class="hljs-meta">@ceph141</span> <span class="hljs-operator">~</span>]# <br>[root<span class="hljs-meta">@ceph141</span> <span class="hljs-operator">~</span>]# ls <span class="hljs-operator">-</span>l <span class="hljs-regexp">/usr/</span>local<span class="hljs-regexp">/bin/</span>cephadm<br><span class="hljs-operator">-</span>rwxr<span class="hljs-operator">-</span>xr<span class="hljs-operator">-</span>x <span class="hljs-number">1</span> root root <span class="hljs-number">215316</span> <span class="hljs-type">Aug</span> <span class="hljs-number">20</span> <span class="hljs-number">22</span>:<span class="hljs-number">19</span> <span class="hljs-regexp">/usr/</span>local<span class="hljs-regexp">/bin/</span>cephadm<br></code></pre></td></tr></table></figure>
+
+<p> <strong>创建新集群</strong></p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">[root@ceph141 ~]<span class="hljs-comment"># cephadm bootstrap --mon-ip 10.0.0.141 --cluster-network 10.0.0.0/24 --allow-fqdn-hostname</span><br>Creating directory <span class="hljs-string">/etc/ceph</span> for ceph.conf<br>Verifying podman|docker is present.<span class="hljs-string">..</span><br>Verifying lvm2 is present.<span class="hljs-string">..</span><br><span class="hljs-string">...</span><br>Generating a dashboard self-signed certificate.<span class="hljs-string">..</span><br>Creating initial admin user.<span class="hljs-string">..</span><br>Fetching dashboard port number.<span class="hljs-string">..</span><br>Ceph Dashboard is now available at:<br><br><span class="hljs-comment">#访问的url，账号，密码</span><br>	     URL: https:<span class="hljs-string">//ceph141</span><span class="hljs-function">:8443</span>/<br>	    User: admin        <br>	Password: s3o1ou58iy<br><br>Enabling client.admin keyring and conf on hosts with <span class="hljs-string">&quot;admin&quot;</span> label<br></code></pre></td></tr></table></figure>
+
+<p> <strong>查看docker镜像</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/20434c5525c6446bab47ddf615323b83.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><strong>登录dashbod</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/4ae5a691f6e9475daad597f3f5f27df5.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><strong>查看节点信息</strong></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/3c11920a7a494e2fb3fee931d9ea4653.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>参考地址：<a target="_blank" rel="noopener" href="https://www.cuiliangblog.cn/">https://www.cuiliangblog.cn/</a></p>
+<p>ceph的官方文档: <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/">https://docs.ceph.com/en/latest/</a><br> 官方架构图: <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/architecture/">https://docs.ceph.com/en/latest/architecture/</a>
+     </p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AD%98%E5%82%A8%E7%AF%87/" class="category-chain-item">存储篇</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Ceph/" class="print-no-link">#Ceph</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>ceph基本概念，架构，部署（一）</div>
+      <div>http://example.com/2025/04/18/ceph基本概念，架构，部署（一）/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>淡黄的cherry</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/18/ceph%E6%96%B0%E5%A2%9E%E8%8A%82%E7%82%B9%EF%BC%8COSD%E8%AE%BE%E5%A4%87%EF%BC%8C%E6%A0%87%E7%AD%BE%E7%AE%A1%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89/" title="ceph新增节点，OSD设备，标签管理（二）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">ceph新增节点，OSD设备，标签管理（二）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/18/%E5%9C%A8K8S%E4%B8%AD%E4%BD%BF%E7%94%A8ArgoCD%E5%81%9A%E6%8C%81%E7%BB%AD%E9%83%A8%E7%BD%B2/" title="在K8S中使用ArgoCD做持续部署">
+                        <span class="hidden-mobile">在K8S中使用ArgoCD做持续部署</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  <div>
+    <span id="timeDate">正在载入天数...</span>
+    <span id="times">载入时分秒...</span>
+    <script>
+    var now = new Date();
+    function createtime(){
+        var grt= new Date("08/17/2020 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24;
+        dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum);
+        hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){
+            hnum = "0" + hnum;
+        }
+        minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes);
+        if(String(mnum).length ==1 ){
+                  mnum = "0" + mnum;
+        }
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds);
+        if(String(snum).length ==1 ){
+                  snum = "0" + snum;
+        }
+        document.getElementById("timeDate").innerHTML = "🚀已持续航行&nbsp"+dnum+"&nbsp天";  
+        document.getElementById("times").innerHTML = hnum + "&nbsp时&nbsp" + mnum + "&nbsp分&nbsp" + snum + "&nbsp秒";
+    }
+    setInterval("createtime()",250);
+    </script>
+  </div>
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom.js"></script>
+<script src="/js/snow.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

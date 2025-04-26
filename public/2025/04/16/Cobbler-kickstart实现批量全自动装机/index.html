@@ -1,0 +1,831 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/2.png">
+  <link rel="icon" href="/img/2.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="淡黄的cherry">
+  <meta name="keywords" content="">
+  <meta name="referrer" content="no-referrer">
+  
+    <meta name="description" content="cobbler简介　　cobbler 是一个系统启动服务boot server,可以通过pxe得方式用来快速安装，重装系统，支持安装不同linux发行版和windows。这个工具是用python开发，方便小巧，15k行代码，使用简单得命令完成pxe网络安装环境配置，还可以管理dhcp，dns，yum包镜像。cobbler可以命令行，也可以web（cobbler-web）,还提供api接口，可以方便">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cobbler+kickstart实现批量全自动装机">
+<meta property="og:url" content="http://example.com/2025/04/16/Cobbler-kickstart%E5%AE%9E%E7%8E%B0%E6%89%B9%E9%87%8F%E5%85%A8%E8%87%AA%E5%8A%A8%E8%A3%85%E6%9C%BA/index.html">
+<meta property="og:site_name" content="cherry">
+<meta property="og:description" content="cobbler简介　　cobbler 是一个系统启动服务boot server,可以通过pxe得方式用来快速安装，重装系统，支持安装不同linux发行版和windows。这个工具是用python开发，方便小巧，15k行代码，使用简单得命令完成pxe网络安装环境配置，还可以管理dhcp，dns，yum包镜像。cobbler可以命令行，也可以web（cobbler-web）,还提供api接口，可以方便">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/f7d7868539934ab9b74ae6fbe7762862.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/8ebcfa6d523145e8afdc6f9cac9be923.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/aebd29209beb5504ca5f1580a2c8acc1.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/602799dad7b31a1fd665eb8ee22940ac.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/175d96b3f6859cb5615d1eaaf152710d.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/6e56c329fdea4466add490819b39036e.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/3b43708c6eab44819bbcb57010aa3f81.png">
+<meta property="og:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/4516113a6b4347578738dae115e4a254.png">
+<meta property="article:published_time" content="2025-04-16T09:34:26.000Z">
+<meta property="article:modified_time" content="2025-04-16T09:36:03.596Z">
+<meta property="article:author" content="淡黄的cherry">
+<meta property="article:tag" content="Windows">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://gitee.com/ljh00928/csdn/raw/master/img/f7d7868539934ab9b74ae6fbe7762862.png">
+  
+  
+  
+  <title>Cobbler+kickstart实现批量全自动装机 - cherry</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/macpanel.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong class="navbar-title">cherryの技术文档</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Cobbler+kickstart实现批量全自动装机"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-16 17:34" pubdate>
+          2025年4月16日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          44 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Cobbler+kickstart实现批量全自动装机</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><strong>cobbler简介</strong><br>　　cobbler 是一个系统启动服务boot server,可以通过pxe得方式用来快速安装，重装系统，支持安装不同linux发行版和windows。这个工具是用python开发，方便小巧，15k行代码，使用简单得命令完成pxe网络安装环境配置，还可以管理dhcp，dns，yum包镜像。cobbler可以命令行，也可以web（cobbler-web）,还提供api接口，可以方便二次开发使用。其实就是多安装树的pxe环境，是pxe的高级应用</p>
+<p><strong>cobbler支持的功能</strong><br>       1、pxe支持</p>
+<p>　　2、dhcp管理</p>
+<p>　　3、dns服务管理（bind，dnsmasq）</p>
+<p>　　4、电源管理</p>
+<p>　　5、kickstart支持</p>
+<p>　　6、yum仓库管理</p>
+<p>　　7、tftp（pxe启动时需要）</p>
+<p>　　8、apache，提供ks得安装源，并提供定制化得ks配置，同时，它和apache做了深度整合，通过cobbler，可以师兄redhat&#x2F;centos&#x2F;fedora系统得快速部署，同时也支持suse、debian（ubuntu）系统，通过配置开可以支持windows</p>
+<p><strong>cobbler架构及工作原理、核心框架</strong><br><strong>cobbler工作原理</strong><br><img src="https://gitee.com/ljh00928/csdn/raw/master/img/f7d7868539934ab9b74ae6fbe7762862.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>cobbler框架<br><img src="https://gitee.com/ljh00928/csdn/raw/master/img/8ebcfa6d523145e8afdc6f9cac9be923.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>介绍一下profile核心，由三个组件组成</p>
+<ul>
+<li>repositories （安装树或安装源）<br>mirror 镜像，光盘或者网络中得安装源<br> import 导入</li>
+<li>distribution（vmlinuz-内核，initrd.img-引导映像文件）<br>cobbler 自动从reporitories抽取出来生成<br> kickstart file 组成得完完整整得系统发行版</li>
+</ul>
+<p>cobbler就是较早pxe的升级版，优点容易配置，还自带web界面比较易于管理，但是中文资料少，（有人测试：cobbler不会应为在局域网中启动了dhcp而导致有些机器因为默认从pxe启动在重启服务器后加载tftp内容导致启动终止，这部分没有验证）</p>
+<p>可以通过cobbler自动部署dhcp，tftp，http，在安装过程中加载ks无人值守安装应答文件实现无人值守，从客户端使用pxe引导启动安装</p>
+<h2 id="一、准备Windows的ADK和win-PE"><a href="#一、准备Windows的ADK和win-PE" class="headerlink" title="一、准备Windows的ADK和win PE"></a>一、准备Windows的ADK和win PE</h2><p>ADK下载地址：<a target="_blank" rel="noopener" href="https://go.microsoft.com/fwlink/?linkid=2026036">https://go.microsoft.com/fwlink/?linkid=2026036</a></p>
+<p>win PE下载地址：<a target="_blank" rel="noopener" href="https://go.microsoft.com/fwlink/?linkid=2022233">https://go.microsoft.com/fwlink/?linkid=2022233</a></p>
+<p>注意，adk 的两个都要下载，这俩都是引导包，真正的安装程序会由这俩软件进行下载。</p>
+<h2 id="二、安装-ADK-和-WinPE"><a href="#二、安装-ADK-和-WinPE" class="headerlink" title="二、安装 ADK 和 WinPE"></a>二、安装 ADK 和 WinPE</h2><p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/aebd29209beb5504ca5f1580a2c8acc1.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/602799dad7b31a1fd665eb8ee22940ac.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>安装完后，以管理员身份打开部署和映像工具环境</p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/175d96b3f6859cb5615d1eaaf152710d.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>定制 Win 10 PE</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cmd">copype amd64 C:\winpe<br><br>Dism /mount-image /imagefile:C:\winpe\media\sources\boot.wim /index:<span class="hljs-number">1</span> /mountdir:C:\winpe\mount<br><br><span class="hljs-built_in">echo</span> <span class="hljs-built_in">net</span> use z: \\<span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">0</span>.<span class="hljs-number">253</span>\share &gt;&gt; C:\winpe\mount\Windows\System32\startnet.<span class="hljs-built_in">cmd</span><br><span class="hljs-built_in">echo</span> z:\win\setup.exe /unattend:z:\win\win10_x64_bios_auto.xml &gt;&gt; C:\winpe\mount\Windows\System32\startnet.<span class="hljs-built_in">cmd</span><br><br>Dism /unmount-image /mountdir:C:\winpe\mount /commit<br>MakeWinPEMedia /ISO C:\winpe C:\winpe\winpe_win10_amd64.iso<br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>本地生成 winpe 文件目录</li>
+<li>dism 挂载 winpe 的启动文件到 winpe 的 mount 目录</li>
+<li>将启动命令硬编码写死到 winpe 的 startnet.cmd 文件里</li>
+<li>无人值守安装</li>
+<li>卸载 winpe 的挂载（一定要执行，否则直接强制删除文件夹会出一些稀奇古怪的问题）</li>
+<li>制作 win10 镜像，名为 winpe_win10_amd64.iso</li>
+</ol>
+<h2 id="三、乌班图安装Cobbler"><a href="#三、乌班图安装Cobbler" class="headerlink" title="三、乌班图安装Cobbler"></a>三、乌班图安装Cobbler</h2><p><code>乌班图安装需要编译安装，建议使用centos安装</code></p>
+<p>安装Apache</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# apt update<br>[root@node1.local ~]# apt install apache2<br></code></pre></td></tr></table></figure>
+
+<p>启用所需的 Apache 模块</p>
+<p>使用 <code>a2enmod</code> 来启用 <code>proxy</code>、<code>proxy_http</code> 和 <code>rewrite</code> 模块</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">a2enmod proxy<br>a2enmod proxy_http<br>a2enmod rewrite<br></code></pre></td></tr></table></figure>
+
+<p>检查是否正确启用模块</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">apache2ctl -M | grep proxy<br><br>proxy_module (shared)<br>proxy_http_module (shared)<br></code></pre></td></tr></table></figure>
+
+<p>创建 TFTP 根目录的符号链接</p>
+<p>Cobbler 需要 TFTP 目录来进行 PXE 启动。创建一个符号链接，指向 <code>tftpboot</code> 目录</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# <span class="hljs-built_in">ln</span> -s /srv/tftp /var/lib/tftpboot<br></code></pre></td></tr></table></figure>
+
+<p>重新启动 Apache 服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# systemctl restart apache2<br></code></pre></td></tr></table></figure>
+
+<p>查看服务状态</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# systemctl status apache2<br></code></pre></td></tr></table></figure>
+
+<p>构建 <code>.deb</code> 包</p>
+<p>下载 Cobbler 源代码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# git <span class="hljs-built_in">clone</span> https://github.com/cobbler/cobbler.git<br>[root@node1.local ~]# <span class="hljs-built_in">cd</span> cobbler<br></code></pre></td></tr></table></figure>
+
+<p>安装 <code>debuild</code> 和其他构建工具</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local cobbler]# apt update<br>[root@node1.local cobbler]# apt install devscripts build-essential fakeroot debhelper<br></code></pre></td></tr></table></figure>
+
+<p>构建</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local cobbler]# make debs<br></code></pre></td></tr></table></figure>
+
+<p>查看构建包位置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# find ~ -iname <span class="hljs-string">&#x27;*.deb&#x27;</span><br>/root/cobbler/deb-build/cobbler-tests-containers_3.4.0_all.deb<br>/root/cobbler/deb-build/cobbler_3.4.0_all.deb<br>/root/cobbler/deb-build/cobbler-tests_3.4.0_all.deb<br>/root/cobbler-tests-containers_3.4.0_all.deb<br>/root/cobbler_3.4.0_all.deb<br>/root/cobbler-tests_3.4.0_all.deb<br><br></code></pre></td></tr></table></figure>
+
+<p>安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local ~]# dpkg -i /root/cobbler_3.4.0_all.deb<br><br><span class="hljs-comment">#安装的时候会提示以下缺少依赖</span><br>fence-agents<br>xorriso<br>python3-gunicorn<br>python3-pymong<br></code></pre></td></tr></table></figure>
+
+<p>安装依赖</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#安装依赖会报错</span><br>[root@node1.local ~]# apt-get install fence-agents xorriso python3-gunicorn python3-pymongo<br>eading package lists... Done<br>Building dependency tree... Done<br>Reading state information... Done<br>You might want to run <span class="hljs-string">&#x27;apt --fix-broken install&#x27;</span> to correct these.<br>The following packages have unmet dependencies:<br> cobbler : Depends: fence-agents but it is not going to be installed<br>           Depends: xorriso but it is not going to be installed<br>           Depends: python3-gunicorn but it is not going to be installed<br> python3-pymongo : Depends: python3-bson (= 3.11.0-1ubuntu0.24.04.1) but it is not going to be installed<br>                   Recommends: python3-gridfs (&gt;= 3.11.0-1ubuntu0.24.04.1) but it is not going to be installed<br>                   Recommends: python3-pymongo-ext but it is not going to be installed<br>E: Unmet dependencies. Try <span class="hljs-string">&#x27;apt --fix-broken install&#x27;</span> with no packages (or specify a solution).<br><br><br><span class="hljs-comment">#修复破损的依赖关系</span><br>[root@node1.local ~]# apt --fix-broken install<br><br><span class="hljs-comment">#安装成功</span><br>[root@node1.local ~]# apt-get install fence-agents xorriso python3-gunicorn python3-pymongo<br>Reading package lists... Done<br>Building dependency tree... Done<br>Reading state information... Done<br>fence-agents is already the newest version (4.12.1-2~exp1ubuntu4).<br>fence-agents <span class="hljs-built_in">set</span> to manually installed.<br>xorriso is already the newest version (1:1.5.6-1.1ubuntu3).<br>xorriso <span class="hljs-built_in">set</span> to manually installed.<br>python3-gunicorn is already the newest version (20.1.0-6).<br>python3-gunicorn <span class="hljs-built_in">set</span> to manually installed.<br>python3-pymongo is already the newest version (3.11.0-1ubuntu0.24.04.1).<br>python3-pymongo <span class="hljs-built_in">set</span> to manually installed.<br>0 upgraded, 0 newly installed, 0 to remove and 19 not upgraded.<br></code></pre></td></tr></table></figure>
+
+<p>安装cobbler</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1.local cobbler]# dpkg -i /root/cobbler_3.4.0_all.deb<br>(Reading database ... 196119 files and directories currently installed.)<br>Preparing to unpack /root/cobbler_3.4.0_all.deb ...<br>Unpacking cobbler (3.4.0) over (3.4.0) ...<br>Setting up cobbler (3.4.0) ...<br>Processing triggers <span class="hljs-keyword">for</span> man-db (2.12.0-4build2) ...<br><br></code></pre></td></tr></table></figure>
+
+<p>启动cobbler</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">mv</span> /etc/cobbler/cobblerd.service /etc/systemd/system/<br><br>systemctl daemon-reload<br>systemctl start cobblerd<br>systemctl <span class="hljs-built_in">enable</span> cobblerd<br> <br>cobblerd check<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="三、centos安装"><a href="#三、centos安装" class="headerlink" title="三、centos安装"></a>三、centos安装</h2><p>参考地址：<a target="_blank" rel="noopener" href="https://blog.swireb.cn/archives/docs-011">https://blog.swireb.cn/archives/docs-011</a></p>
+<p>准备工作</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#关闭防火墙和selinux</span><br>systemctl <span class="hljs-built_in">disable</span> firewalld.service<br>systemctl stop firewalld.service<br>sed -i <span class="hljs-string">&#x27;s/^SELINUX=.*/SELINUX=disabled/g&#x27;</span> /etc/selinux/config<br><br><span class="hljs-comment">#关闭了selinux需要重启服务器生效</span><br>reboot<br></code></pre></td></tr></table></figure>
+
+<p>安装 EPEL 仓库</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">yum install -y epel-release<br></code></pre></td></tr></table></figure>
+
+<p>更新仓库安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs bash">yum update<br>yum install -y dhcp tftp-server xinetd debmirror pykickstart cobbler cobbler-web  <br><br><span class="hljs-comment">#组件作用简介</span><br>cobbler     <span class="hljs-comment">#基础组件</span><br>cobbler-web <span class="hljs-comment">#web组件</span><br>debmirror   <span class="hljs-comment">#镜像管理工具</span><br>pykickstart <span class="hljs-comment">#检查cobbler配置文件语法</span><br>httpd       <span class="hljs-comment">#发布镜像</span><br>syslinux    <span class="hljs-comment">#配置引导文件（生成pxelinux.0）</span><br>tftp-server <span class="hljs-comment">#为PXE的客户端提供引导文件</span><br>dhcp        <span class="hljs-comment">#为PXE的客户端提供IP地址、告知tftp的服务地址</span><br></code></pre></td></tr></table></figure>
+
+<p>Cobbler目录文件简介</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs bash">rpm -ql cobbler<br>/etc/cobbler                  <span class="hljs-comment">#配置文件目录</span><br>/etc/cobbler/settings         <span class="hljs-comment">#cobbler主配置文件</span><br>/etc/cobbler/dhcp.template    <span class="hljs-comment">#dhcp服务的配置模板</span><br>/etc/cobbler/tftpd.template   <span class="hljs-comment">#tftp服务的配置模板</span><br>/etc/cobbler/rsync.template   <span class="hljs-comment">#rsync服务的配置模板</span><br>/etc/cobbler/iso              <span class="hljs-comment">#iso模板配置文件目录</span><br>/etc/cobbler/pxe              <span class="hljs-comment">#pxe模板文件目录</span><br>/etc/cobbler/power            <span class="hljs-comment">#电源的配置文件目录</span><br>/etc/cobbler/users.conf       <span class="hljs-comment">#web服务授权配置文件</span><br>/etc/cobbler/users.digest     <span class="hljs-comment">#用于web访问的用户名密码配置文件</span><br>/etc/cobbler/dnsmasq.template <span class="hljs-comment">#dns服务的配置模板</span><br>/etc/cobbler/modules.conf     <span class="hljs-comment">#cobbler模块配置文件</span><br>/var/lib/cobbler              <span class="hljs-comment">#cobbler数据目录</span><br>/var/lib/cobbler/config       <span class="hljs-comment">#配置文件</span><br>/var/lib/cobbler/kickstarts   <span class="hljs-comment">#默认存放kickstart文件</span><br>/var/lib/cobbler/loaders      <span class="hljs-comment">#存放的各种引导程序</span><br>/var/www/cobbler              <span class="hljs-comment">#系统安装镜像目录</span><br>/var/www/cobbler/ks_mirror    <span class="hljs-comment">#导入的系统镜像列表</span><br>/var/www/cobbler/images       <span class="hljs-comment">#导入的系统镜像启动文件</span><br>/var/www/cobbler/repo_mirror  <span class="hljs-comment">#YUM源存储目录</span><br>/var/log/cobbler              <span class="hljs-comment">#日志目录</span><br>/var/log/cobbler/install.log  <span class="hljs-comment">#客户端系统安装日志</span><br>/var/log/cobbler/cobbler.log  <span class="hljs-comment">#cobbler日志 </span><br></code></pre></td></tr></table></figure>
+
+<p>Cobbler主配置文件修改</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#生成密文密码</span><br>openssl passwd -1<br><br><span class="hljs-comment">#设置root密码</span><br>sed -i <span class="hljs-string">&#x27;s|^default_password_crypted.*|default_password_crypted: &quot;$1$Nrt/tXCR$BrRthh4tFphGyCunrGWzi/&quot;|g&#x27;</span> /etc/cobbler/settings<br><br><span class="hljs-comment">#设置指定tftp服务IP地址</span><br>sed -i <span class="hljs-string">&#x27;s|^next_server.*|next_server: 192.1.1.211|g&#x27;</span> /etc/cobbler/settings<br><br><span class="hljs-comment">#设置cobbler服务地址</span><br>sed -i <span class="hljs-string">&#x27;s|^server.*|server: 192.1.1.211|g&#x27;</span> /etc/cobbler/settings<br><br><span class="hljs-comment">#cobbler接管dhcp（0为关闭 1为开启）</span><br>sed -i <span class="hljs-string">&#x27;s|^manage_dhcp.*|manage_dhcp: 0|g&#x27;</span> /etc/cobbler/settings<br><br><span class="hljs-comment">#cobbler接管tftp（0为关闭 1为开启）</span><br>sed -i <span class="hljs-string">&#x27;s|^manage_tftpd.*|manage_tftpd: 1|g&#x27;</span> /etc/cobbler/settings<br>      <br><span class="hljs-comment">#cobbler启动服务</span><br>systemctl <span class="hljs-built_in">enable</span> --now httpd.service<br>systemctl <span class="hljs-built_in">enable</span> --now cobblerd.service<br></code></pre></td></tr></table></figure>
+
+<p>Cobbler首次检查</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">cobbler check<br>1 : change <span class="hljs-string">&#x27;disable&#x27;</span> to <span class="hljs-string">&#x27;no&#x27;</span> <span class="hljs-keyword">in</span> /etc/xinetd.d/tftp<br>2 : Some network boot-loaders are missing from /var/lib/cobbler/loaders, you may run <span class="hljs-string">&#x27;cobbler get-loaders&#x27;</span> to download them, or, <span class="hljs-keyword">if</span> you only want to handle x86/x86_64 netbooting, you may ensure that you have installed a *recent* version of the syslinux package installed and can ignore this message entirely.  Files <span class="hljs-keyword">in</span> this directory, should you want to support all architectures, should include pxelinux.0, menu.c32, elilo.efi, and yaboot. The <span class="hljs-string">&#x27;cobbler get-loaders&#x27;</span> <span class="hljs-built_in">command</span> is the easiest way to resolve these requirements. <span class="hljs-comment">#可以忽略（确保系统已经安装pxelinux）</span><br>3 : <span class="hljs-built_in">enable</span> and start rsyncd.service with systemctl<br>4 : comment out <span class="hljs-string">&#x27;dists&#x27;</span> on /etc/debmirror.conf <span class="hljs-keyword">for</span> proper debian support<br>5 : comment out <span class="hljs-string">&#x27;arches&#x27;</span> on /etc/debmirror.conf <span class="hljs-keyword">for</span> proper debian support<br>6 : fencing tools were not found, and are required to use the (optional) power management features. install cman or fence-agents to use them <span class="hljs-comment">#可以忽略</span><br></code></pre></td></tr></table></figure>
+
+<p>解决Cobbler检查报错</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#报错1问题解决</span><br><span class="hljs-built_in">cat</span> &lt;&lt; <span class="hljs-string">EOF | tee /etc/xinetd.d/tftp</span><br><span class="hljs-string">service tftp</span><br><span class="hljs-string">&#123;</span><br><span class="hljs-string">        socket_type             = dgram</span><br><span class="hljs-string">        protocol                = udp</span><br><span class="hljs-string">        wait                    = yes </span><br><span class="hljs-string">        user                    = root</span><br><span class="hljs-string">        server                  = /usr/sbin/in.tftpd</span><br><span class="hljs-string">        server_args             = -s /var/lib/tftpboot</span><br><span class="hljs-string">        disable                 = no</span><br><span class="hljs-string">        per_source              = 11</span><br><span class="hljs-string">        cps                     = 100 2</span><br><span class="hljs-string">        flags                   = IPv4</span><br><span class="hljs-string">&#125;</span><br><span class="hljs-string">EOF</span><br><br><span class="hljs-comment">#报错3问题解决</span><br>systemctl <span class="hljs-built_in">enable</span> --now rsyncd.service<br><br><span class="hljs-comment">#报错4、5问题解决</span><br>sed -i <span class="hljs-string">&#x27;s|@dists=.*|# @dists=|&#x27;</span> /etc/debmirror.conf <br>sed -i <span class="hljs-string">&#x27;s|@arches=.*|# @arches=|&#x27;</span> /etc/debmirror.conf<br></code></pre></td></tr></table></figure>
+
+<p>Cobbler首次同步</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#再次运行检查</span><br>cobbler check<br>1 : Some network boot-loaders are missing from /var/lib/cobbler/loaders, you may run <span class="hljs-string">&#x27;cobbler get-loaders&#x27;</span> to download them, or, <span class="hljs-keyword">if</span> you only want to handle x86/x86_64 netbooting, you may ensure that you have installed a *recent* version of the syslinux package installed and can ignore this message entirely.  Files <span class="hljs-keyword">in</span> this directory, should you want to support all architectures, should include pxelinux.0, menu.c32, elilo.efi, and yaboot. The <span class="hljs-string">&#x27;cobbler get-loaders&#x27;</span> <span class="hljs-built_in">command</span> is the easiest way to resolve these requirements.<br><br><span class="hljs-comment">#cobbler首次同步</span><br>cobbler <span class="hljs-built_in">sync</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="四、配置dhcp服务"><a href="#四、配置dhcp服务" class="headerlink" title="四、配置dhcp服务"></a><strong>四、配置dhcp服务</strong></h2><p>Cobbler接管dhcp</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs bash">vim /etc/cobbler/dhcp.template  <br>subnet 10.99.88.0 netmask 255.255.255.0 &#123;<br>     <span class="hljs-comment"># option routers             10.99.88.55;</span><br>     <span class="hljs-comment"># option domain-name-servers 127.0.0.1;</span><br>     option subnet-mask         255.255.255.0;<br>     range dynamic-bootp        10.99.88.100 10.99.88.254;<br>     default-lease-time         21600;<br>     max-lease-time             43200;<br>     next-server                <span class="hljs-variable">$next_server</span>;<br>     class <span class="hljs-string">&quot;pxeclients&quot;</span> &#123;<br>          match <span class="hljs-keyword">if</span> substring (option vendor-class-identifier, 0, 9) = <span class="hljs-string">&quot;PXEClient&quot;</span>;<br>          <span class="hljs-keyword">if</span> option pxe-system-type = 00:02 &#123;<br>                  filename <span class="hljs-string">&quot;ia64/elilo.efi&quot;</span>;<br>          &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> option pxe-system-type = 00:06 &#123;<br>                  filename <span class="hljs-string">&quot;grub/grub-x86.efi&quot;</span>;<br>          &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> option pxe-system-type = 00:07 &#123;<br>                  filename <span class="hljs-string">&quot;grub/grub-x86_64.efi&quot;</span>;<br>          &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> option pxe-system-type = 00:09 &#123;<br>                  filename <span class="hljs-string">&quot;grub/grub-x86_64.efi&quot;</span>;<br>          &#125; <span class="hljs-keyword">else</span> &#123;<br>                  filename <span class="hljs-string">&quot;pxelinux.0&quot;</span>;<br>          &#125;<br>     &#125;<br><br>&#125;<br>    <br><span class="hljs-comment">#cobbler主配置文件开启dhcp接管</span><br>sed -i <span class="hljs-string">&#x27;s|^manage_dhcp.*|manage_dhcp: 1|g&#x27;</span> /etc/cobbler/settings <br><br><span class="hljs-comment">#重新同步</span><br>systemctl restart cobblerd.service<br>cobbler <span class="hljs-built_in">sync</span>  <br><br><span class="hljs-comment">#启动dhcp服务</span><br>systemctl <span class="hljs-built_in">enable</span> --now dhcpd.service <br>systemctl restart dhcpd.service<br></code></pre></td></tr></table></figure>
+
+<p>使用现有dhcp服务器–&gt;定义了上面的模板下面会自动获取</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#修改dhcp配置文件</span><br>vim /etc/dhcp/dhcpd.conf <br>subnet 10.99.88.0 netmask 255.255.255.0 &#123;<br>     <span class="hljs-comment"># option routers             10.99.88.55;</span><br>     <span class="hljs-comment"># option domain-name-servers 127.0.0.1;</span><br>     option subnet-mask         255.255.255.0;<br>     range dynamic-bootp        10.99.88.100 10.99.88.254;<br>     default-lease-time         21600;<br>     max-lease-time             43200;<br>     next-server                192.1.1.211;<br>     class <span class="hljs-string">&quot;pxeclients&quot;</span> &#123;<br>          match <span class="hljs-keyword">if</span> substring (option vendor-class-identifier, 0, 9) = <span class="hljs-string">&quot;PXEClient&quot;</span>;<br>          <span class="hljs-keyword">if</span> option pxe-system-type = 00:02 &#123;<br>                  filename <span class="hljs-string">&quot;ia64/elilo.efi&quot;</span>;<br>          &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> option pxe-system-type = 00:06 &#123;<br>                  filename <span class="hljs-string">&quot;grub/grub-x86.efi&quot;</span>;<br>          &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> option pxe-system-type = 00:07 &#123;<br>                  filename <span class="hljs-string">&quot;grub/grub-x86_64.efi&quot;</span>;<br>          &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> option pxe-system-type = 00:09 &#123;<br>                  filename <span class="hljs-string">&quot;grub/grub-x86_64.efi&quot;</span>;<br>          &#125; <span class="hljs-keyword">else</span> &#123;<br>                  filename <span class="hljs-string">&quot;pxelinux.0&quot;</span>;<br>          &#125;<br>     &#125;<br><br>&#125;<br><span class="hljs-comment">#启动dhcp服务</span><br>systemctl <span class="hljs-built_in">enable</span> --now dhcpd.service <br>systemctl restart dhcpd.service<br></code></pre></td></tr></table></figure>
+
+<h2 id="五、其他相关服务配置"><a href="#五、其他相关服务配置" class="headerlink" title="五、其他相关服务配置"></a><strong>五、其他相关服务配置</strong></h2><p>配置tftp服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#确保tftp的站点目录存在引导文件（cobbler检查问题的过程中已经修了tftp的配置文件）</span><br>ll /var/lib/tftpboot/<br>drwxr-xr-x  3 root root   4096 Mar  1 23:54 boot<br>drwxr-xr-x. 2 root root   4096 Oct 15  2019 etc<br>drwxr-xr-x. 2 root root   4096 Mar  1 23:54 grub  <span class="hljs-comment">#UEFI启动菜单目录</span><br>drwxr-xr-x. 7 root root   4096 Mar  1 23:54 images<br>drwxr-xr-x. 2 root root   4096 Oct 15  2019 images2<br>-rw-r--r--. 2 root root  26140 Oct 31  2018 memdisk<br>-rw-r--r--. 2 root root  54964 Mar  1 23:54 menu.c32<br>drwxr-xr-x. 2 root root   4096 Oct 15  2019 ppc<br>-rw-r--r--. 2 root root  16794 Mar  1 23:54 pxelinux.0<br>drwxr-xr-x. 2 root root   4096 Mar  1 23:56 pxelinux.cfg <span class="hljs-comment">#BIOS启动菜单目录</span><br>drwxr-xr-x. 2 root root   4096 Mar  1 23:54 s390x<br>-rw-r--r--  2 root root 198236 Feb  8 15:17 yaboot<br><br><span class="hljs-comment">#启动tftp服务</span><br>systemctl <span class="hljs-built_in">enable</span> --now tftp.service  <br>systemctl <span class="hljs-built_in">enable</span> --now xinetd.service<br>systemctl restart tftp.service <br>systemctl restart xinetd.service<br></code></pre></td></tr></table></figure>
+
+<h2 id="六、配置-Cobbler-Server"><a href="#六、配置-Cobbler-Server" class="headerlink" title="六、配置 Cobbler Server"></a>六、配置 Cobbler Server</h2><p>参考地址：<a target="_blank" rel="noopener" href="https://anjia0532.github.io/2019/02/22/cobbler-win10-win-server-2019/">https://anjia0532.github.io/2019/02/22/cobbler-win10-win-server-2019/</a></p>
+<h4 id="导入-Cobbler"><a href="#导入-Cobbler" class="headerlink" title="导入 Cobbler"></a>导入 Cobbler</h4><p>使用 WinScp 等工具，将 winpe_win10_amd64.iso 上传到 Cobbler 服务器上</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@localhost ~]# cobbler distro add --name=windows_10_x64 --kernel=/var/lib/tftpboot/memdisk --initrd=/root/winpe_win10_amd64.iso --kopts=<span class="hljs-string">&quot;raw iso&quot;</span><br>[root@localhost ~]# <span class="hljs-built_in">touch</span> /var/lib/cobbler/kickstarts/winpe.xml<br>[root@localhost ~]# cobbler profile add --name=windows_10_x64 --distro=windows_10_x64 --kickstart=/var/lib/cobbler/kickstarts/winpe.xml<br></code></pre></td></tr></table></figure>
+
+<h4 id="创建自动应答文件"><a href="#创建自动应答文件" class="headerlink" title="创建自动应答文件"></a>创建自动应答文件</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@localhost kickstarts]# <span class="hljs-built_in">pwd</span><br>/var/lib/cobbler/kickstarts<br><br>[root@localhost kickstarts]# vim winpe.xml<br>&lt;!--*************************************************<br>Windows 10 Answer File Generator<br>Created using Windows AFG found at:<br>;http://www.windowsafg.com<br><br>Installation Notes<br>Location: zh-CN<br>Notes: Enter your comments here...<br>**************************************************--&gt;<br>&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;utf-8&quot;</span>?&gt;<br>&lt;unattend<br>    xmlns=<span class="hljs-string">&quot;urn:schemas-microsoft-com:unattend&quot;</span>&gt;<br>    &lt;settings pass=<span class="hljs-string">&quot;windowsPE&quot;</span>&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-International-Core-WinPE&quot;</span> processorArchitecture=<span class="hljs-string">&quot;x86&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;SetupUILanguage&gt;<br>                &lt;UILanguage&gt;en-US&lt;/UILanguage&gt;<br>            &lt;/SetupUILanguage&gt;<br>            &lt;InputLocale&gt;0804:&#123;81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E&#125;&#123;FA550B04-5AD7-411f-A5AC-CA038EC515D7&#125;&lt;/InputLocale&gt;<br>            &lt;SystemLocale&gt;zh-CN&lt;/SystemLocale&gt;<br>            &lt;UILanguage&gt;zh-CN&lt;/UILanguage&gt;<br>            &lt;UILanguageFallback&gt;zh-CN&lt;/UILanguageFallback&gt;<br>            &lt;UserLocale&gt;zh-CN&lt;/UserLocale&gt;<br>        &lt;/component&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-International-Core-WinPE&quot;</span> processorArchitecture=<span class="hljs-string">&quot;amd64&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;SetupUILanguage&gt;<br>                &lt;UILanguage&gt;en-US&lt;/UILanguage&gt;<br>            &lt;/SetupUILanguage&gt;<br>            &lt;InputLocale&gt;0804:&#123;81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E&#125;&#123;FA550B04-5AD7-411f-A5AC-CA038EC515D7&#125;&lt;/InputLocale&gt;<br>            &lt;SystemLocale&gt;zh-CN&lt;/SystemLocale&gt;<br>            &lt;UILanguage&gt;zh-CN&lt;/UILanguage&gt;<br>            &lt;UILanguageFallback&gt;zh-CN&lt;/UILanguageFallback&gt;<br>            &lt;UserLocale&gt;zh-CN&lt;/UserLocale&gt;<br>        &lt;/component&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-Setup&quot;</span> processorArchitecture=<span class="hljs-string">&quot;x86&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;DiskConfiguration&gt;<br>                &lt;Disk wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                    &lt;CreatePartitions&gt;<br>                        &lt;CreatePartition wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                            &lt;Order&gt;1&lt;/Order&gt;<br>                            &lt;Type&gt;Primary&lt;/Type&gt;<br>                            &lt;Size&gt;100&lt;/Size&gt;<br>                        &lt;/CreatePartition&gt;<br>                        &lt;CreatePartition wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                            &lt;Extend&gt;<span class="hljs-literal">true</span>&lt;/Extend&gt;<br>                            &lt;Order&gt;2&lt;/Order&gt;<br>                            &lt;Type&gt;Primary&lt;/Type&gt;<br>                        &lt;/CreatePartition&gt;<br>                    &lt;/CreatePartitions&gt;<br>                    &lt;ModifyPartitions&gt;<br>                        &lt;ModifyPartition wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                            &lt;Active&gt;<span class="hljs-literal">true</span>&lt;/Active&gt;<br>                            &lt;Format&gt;NTFS&lt;/Format&gt;<br>                            &lt;Label&gt;System Reserved&lt;/Label&gt;<br>                            &lt;Order&gt;1&lt;/Order&gt;<br>                            &lt;PartitionID&gt;1&lt;/PartitionID&gt;<br>                            &lt;TypeID&gt;0x27&lt;/TypeID&gt;<br>                        &lt;/ModifyPartition&gt;<br>                        &lt;ModifyPartition wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                            &lt;Active&gt;<span class="hljs-literal">true</span>&lt;/Active&gt;<br>                            &lt;Format&gt;NTFS&lt;/Format&gt;<br>                            &lt;Label&gt;OS&lt;/Label&gt;<br>                            &lt;Letter&gt;C&lt;/Letter&gt;<br>                            &lt;Order&gt;2&lt;/Order&gt;<br>                            &lt;PartitionID&gt;2&lt;/PartitionID&gt;<br>                        &lt;/ModifyPartition&gt;<br>                    &lt;/ModifyPartitions&gt;<br>                    &lt;DiskID&gt;0&lt;/DiskID&gt;<br>                    &lt;WillWipeDisk&gt;<span class="hljs-literal">true</span>&lt;/WillWipeDisk&gt;<br>                &lt;/Disk&gt;<br>            &lt;/DiskConfiguration&gt;<br>            &lt;ImageInstall&gt;<br>                &lt;OSImage&gt;<br>                    &lt;InstallTo&gt;<br>                        &lt;DiskID&gt;0&lt;/DiskID&gt;<br>                        &lt;PartitionID&gt;2&lt;/PartitionID&gt;<br>                    &lt;/InstallTo&gt;<br>                    &lt;InstallToAvailablePartition&gt;<span class="hljs-literal">false</span>&lt;/InstallToAvailablePartition&gt;<br>                &lt;/OSImage&gt;<br>            &lt;/ImageInstall&gt;<br>            &lt;UserData&gt;<br>                &lt;AcceptEula&gt;<span class="hljs-literal">true</span>&lt;/AcceptEula&gt;<br>                &lt;FullName&gt;AnJia&lt;/FullName&gt;<br>                &lt;Organization&gt;AnJia&lt;/Organization&gt;<br>                &lt;ProductKey&gt;<br>                    &lt;Key&gt;VK7JG-NPHTM-C97JM-9MPGT-3V66T&lt;/Key&gt;<br>                &lt;/ProductKey&gt;<br>            &lt;/UserData&gt;<br>        &lt;/component&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-Setup&quot;</span> processorArchitecture=<span class="hljs-string">&quot;amd64&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;DiskConfiguration&gt;<br>                &lt;Disk wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                    &lt;CreatePartitions&gt;<br>                        &lt;CreatePartition wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                            &lt;Order&gt;1&lt;/Order&gt;<br>                            &lt;Type&gt;Primary&lt;/Type&gt;<br>                            &lt;Size&gt;100&lt;/Size&gt;<br>                        &lt;/CreatePartition&gt;<br>                        &lt;CreatePartition wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                            &lt;Extend&gt;<span class="hljs-literal">true</span>&lt;/Extend&gt;<br>                            &lt;Order&gt;2&lt;/Order&gt;<br>                            &lt;Type&gt;Primary&lt;/Type&gt;<br>                        &lt;/CreatePartition&gt;<br>                    &lt;/CreatePartitions&gt;<br>                    &lt;ModifyPartitions&gt;<br>                        &lt;ModifyPartition wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                            &lt;Active&gt;<span class="hljs-literal">true</span>&lt;/Active&gt;<br>                            &lt;Format&gt;NTFS&lt;/Format&gt;<br>                            &lt;Label&gt;System Reserved&lt;/Label&gt;<br>                            &lt;Order&gt;1&lt;/Order&gt;<br>                            &lt;PartitionID&gt;1&lt;/PartitionID&gt;<br>                            &lt;TypeID&gt;0x27&lt;/TypeID&gt;<br>                        &lt;/ModifyPartition&gt;<br>                        &lt;ModifyPartition wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                            &lt;Active&gt;<span class="hljs-literal">true</span>&lt;/Active&gt;<br>                            &lt;Format&gt;NTFS&lt;/Format&gt;<br>                            &lt;Label&gt;OS&lt;/Label&gt;<br>                            &lt;Letter&gt;C&lt;/Letter&gt;<br>                            &lt;Order&gt;2&lt;/Order&gt;<br>                            &lt;PartitionID&gt;2&lt;/PartitionID&gt;<br>                        &lt;/ModifyPartition&gt;<br>                    &lt;/ModifyPartitions&gt;<br>                    &lt;DiskID&gt;0&lt;/DiskID&gt;<br>                    &lt;WillWipeDisk&gt;<span class="hljs-literal">true</span>&lt;/WillWipeDisk&gt;<br>                &lt;/Disk&gt;<br>            &lt;/DiskConfiguration&gt;<br>            &lt;ImageInstall&gt;<br>                &lt;OSImage&gt;<br>                    &lt;InstallTo&gt;<br>                        &lt;DiskID&gt;0&lt;/DiskID&gt;<br>                        &lt;PartitionID&gt;2&lt;/PartitionID&gt;<br>                    &lt;/InstallTo&gt;<br>                    &lt;InstallToAvailablePartition&gt;<span class="hljs-literal">false</span>&lt;/InstallToAvailablePartition&gt;<br>                &lt;/OSImage&gt;<br>            &lt;/ImageInstall&gt;<br>            &lt;UserData&gt;<br>                &lt;AcceptEula&gt;<span class="hljs-literal">true</span>&lt;/AcceptEula&gt;<br>                &lt;FullName&gt;AnJia&lt;/FullName&gt;<br>                &lt;Organization&gt;AnJia&lt;/Organization&gt;<br>                &lt;ProductKey&gt;<br>                    &lt;Key&gt;VK7JG-NPHTM-C97JM-9MPGT-3V66T&lt;/Key&gt;<br>                &lt;/ProductKey&gt;<br>            &lt;/UserData&gt;<br>        &lt;/component&gt;<br>    &lt;/settings&gt;<br>    &lt;settings pass=<span class="hljs-string">&quot;offlineServicing&quot;</span>&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-LUA-Settings&quot;</span> processorArchitecture=<span class="hljs-string">&quot;x86&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;EnableLUA&gt;<span class="hljs-literal">false</span>&lt;/EnableLUA&gt;<br>        &lt;/component&gt;<br>    &lt;/settings&gt;<br>    &lt;settings pass=<span class="hljs-string">&quot;offlineServicing&quot;</span>&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-LUA-Settings&quot;</span> processorArchitecture=<span class="hljs-string">&quot;amd64&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;EnableLUA&gt;<span class="hljs-literal">false</span>&lt;/EnableLUA&gt;<br>        &lt;/component&gt;<br>    &lt;/settings&gt;<br>    &lt;settings pass=<span class="hljs-string">&quot;generalize&quot;</span>&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-Security-SPP&quot;</span> processorArchitecture=<span class="hljs-string">&quot;x86&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;SkipRearm&gt;1&lt;/SkipRearm&gt;<br>        &lt;/component&gt;<br>    &lt;/settings&gt;<br>    &lt;settings pass=<span class="hljs-string">&quot;generalize&quot;</span>&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-Security-SPP&quot;</span> processorArchitecture=<span class="hljs-string">&quot;amd64&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;SkipRearm&gt;1&lt;/SkipRearm&gt;<br>        &lt;/component&gt;<br>    &lt;/settings&gt;<br>    &lt;settings pass=<span class="hljs-string">&quot;specialize&quot;</span>&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-International-Core&quot;</span> processorArchitecture=<span class="hljs-string">&quot;x86&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;InputLocale&gt;0804:&#123;81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E&#125;&#123;FA550B04-5AD7-411f-A5AC-CA038EC515D7&#125;&lt;/InputLocale&gt;<br>            &lt;SystemLocale&gt;zh-CN&lt;/SystemLocale&gt;<br>            &lt;UILanguage&gt;zh-CN&lt;/UILanguage&gt;<br>            &lt;UILanguageFallback&gt;zh-CN&lt;/UILanguageFallback&gt;<br>            &lt;UserLocale&gt;zh-CN&lt;/UserLocale&gt;<br>        &lt;/component&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-International-Core&quot;</span> processorArchitecture=<span class="hljs-string">&quot;amd64&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;InputLocale&gt;0804:&#123;81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E&#125;&#123;FA550B04-5AD7-411f-A5AC-CA038EC515D7&#125;&lt;/InputLocale&gt;<br>            &lt;SystemLocale&gt;zh-CN&lt;/SystemLocale&gt;<br>            &lt;UILanguage&gt;zh-CN&lt;/UILanguage&gt;<br>            &lt;UILanguageFallback&gt;zh-CN&lt;/UILanguageFallback&gt;<br>            &lt;UserLocale&gt;zh-CN&lt;/UserLocale&gt;<br>        &lt;/component&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-Security-SPP-UX&quot;</span> processorArchitecture=<span class="hljs-string">&quot;x86&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;SkipAutoActivation&gt;<span class="hljs-literal">true</span>&lt;/SkipAutoActivation&gt;<br>        &lt;/component&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-Security-SPP-UX&quot;</span> processorArchitecture=<span class="hljs-string">&quot;amd64&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;SkipAutoActivation&gt;<span class="hljs-literal">true</span>&lt;/SkipAutoActivation&gt;<br>        &lt;/component&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-SQMApi&quot;</span> processorArchitecture=<span class="hljs-string">&quot;x86&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;CEIPEnabled&gt;0&lt;/CEIPEnabled&gt;<br>        &lt;/component&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-SQMApi&quot;</span> processorArchitecture=<span class="hljs-string">&quot;amd64&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;CEIPEnabled&gt;0&lt;/CEIPEnabled&gt;<br>        &lt;/component&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-Shell-Setup&quot;</span> processorArchitecture=<span class="hljs-string">&quot;x86&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;ComputerName&gt;AnJia-PC&lt;/ComputerName&gt;<br>            &lt;ProductKey&gt;VK7JG-NPHTM-C97JM-9MPGT-3V66T&lt;/ProductKey&gt;<br>        &lt;/component&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-Shell-Setup&quot;</span> processorArchitecture=<span class="hljs-string">&quot;amd64&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;ComputerName&gt;AnJia-PC&lt;/ComputerName&gt;<br>            &lt;ProductKey&gt;VK7JG-NPHTM-C97JM-9MPGT-3V66T&lt;/ProductKey&gt;<br>        &lt;/component&gt;<br>    &lt;/settings&gt;<br>    &lt;settings pass=<span class="hljs-string">&quot;oobeSystem&quot;</span>&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-Shell-Setup&quot;</span> processorArchitecture=<span class="hljs-string">&quot;x86&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;AutoLogon&gt;<br>                &lt;Password&gt;<br>                    &lt;Value&gt;&lt;/Value&gt;<br>                    &lt;PlainText&gt;<span class="hljs-literal">true</span>&lt;/PlainText&gt;<br>                &lt;/Password&gt;<br>                &lt;Enabled&gt;<span class="hljs-literal">true</span>&lt;/Enabled&gt;<br>                &lt;Username&gt;AnJia&lt;/Username&gt;<br>            &lt;/AutoLogon&gt;<br>            &lt;OOBE&gt;<br>                &lt;HideEULAPage&gt;<span class="hljs-literal">true</span>&lt;/HideEULAPage&gt;<br>                &lt;HideOEMRegistrationScreen&gt;<span class="hljs-literal">true</span>&lt;/HideOEMRegistrationScreen&gt;<br>                &lt;HideOnlineAccountScreens&gt;<span class="hljs-literal">true</span>&lt;/HideOnlineAccountScreens&gt;<br>                &lt;HideWirelessSetupInOOBE&gt;<span class="hljs-literal">true</span>&lt;/HideWirelessSetupInOOBE&gt;<br>                &lt;NetworkLocation&gt;Work&lt;/NetworkLocation&gt;<br>                &lt;SkipUserOOBE&gt;<span class="hljs-literal">true</span>&lt;/SkipUserOOBE&gt;<br>                &lt;SkipMachineOOBE&gt;<span class="hljs-literal">true</span>&lt;/SkipMachineOOBE&gt;<br>                &lt;ProtectYourPC&gt;1&lt;/ProtectYourPC&gt;<br>            &lt;/OOBE&gt;<br>            &lt;UserAccounts&gt;<br>                &lt;LocalAccounts&gt;<br>                    &lt;LocalAccount wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                        &lt;Password&gt;<br>                            &lt;Value&gt;&lt;/Value&gt;<br>                            &lt;PlainText&gt;<span class="hljs-literal">true</span>&lt;/PlainText&gt;<br>                        &lt;/Password&gt;<br>                        &lt;Description&gt;AnJia&lt;/Description&gt;<br>                        &lt;DisplayName&gt;AnJia&lt;/DisplayName&gt;<br>                        &lt;Group&gt;Administrators&lt;/Group&gt;<br>                        &lt;Name&gt;AnJia&lt;/Name&gt;<br>                    &lt;/LocalAccount&gt;<br>                &lt;/LocalAccounts&gt;<br>            &lt;/UserAccounts&gt;<br>            &lt;RegisteredOrganization&gt;AnJia&lt;/RegisteredOrganization&gt;<br>            &lt;RegisteredOwner&gt;AnJia&lt;/RegisteredOwner&gt;<br>            &lt;DisableAutoDaylightTimeSet&gt;<span class="hljs-literal">false</span>&lt;/DisableAutoDaylightTimeSet&gt;<br>            &lt;FirstLogonCommands&gt;<br>                &lt;SynchronousCommand wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                    &lt;Description&gt;Control Panel View&lt;/Description&gt;<br>                    &lt;Order&gt;1&lt;/Order&gt;<br>                    &lt;CommandLine&gt;reg add <span class="hljs-string">&quot;HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel&quot;</span> /v StartupPage /t REG_DWORD /d 1 /f&lt;/CommandLine&gt;<br>                    &lt;RequiresUserInput&gt;<span class="hljs-literal">true</span>&lt;/RequiresUserInput&gt;<br>                &lt;/SynchronousCommand&gt;<br>                &lt;SynchronousCommand wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                    &lt;Order&gt;2&lt;/Order&gt;<br>                    &lt;Description&gt;Control Panel Icon Size&lt;/Description&gt;<br>                    &lt;RequiresUserInput&gt;<span class="hljs-literal">false</span>&lt;/RequiresUserInput&gt;<br>                    &lt;CommandLine&gt;reg add <span class="hljs-string">&quot;HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel&quot;</span> /v AllItemsIconView /t REG_DWORD /d 0 /f&lt;/CommandLine&gt;<br>                &lt;/SynchronousCommand&gt;<br>                &lt;SynchronousCommand wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                    &lt;Order&gt;3&lt;/Order&gt;<br>                    &lt;RequiresUserInput&gt;<span class="hljs-literal">false</span>&lt;/RequiresUserInput&gt;<br>                    &lt;CommandLine&gt;cmd /C wmic useraccount <span class="hljs-built_in">where</span> name=<span class="hljs-string">&quot;AnJia&quot;</span> <span class="hljs-built_in">set</span> PasswordExpires=<span class="hljs-literal">false</span>&lt;/CommandLine&gt;<br>                    &lt;Description&gt;Password Never Expires&lt;/Description&gt;<br>                &lt;/SynchronousCommand&gt;<br>            &lt;/FirstLogonCommands&gt;<br>            &lt;TimeZone&gt;China Standard Time&lt;/TimeZone&gt;<br>        &lt;/component&gt;<br>        &lt;component name=<span class="hljs-string">&quot;Microsoft-Windows-Shell-Setup&quot;</span> processorArchitecture=<span class="hljs-string">&quot;amd64&quot;</span> publicKeyToken=<span class="hljs-string">&quot;31bf3856ad364e35&quot;</span> language=<span class="hljs-string">&quot;neutral&quot;</span> versionScope=<span class="hljs-string">&quot;nonSxS&quot;</span><br>            xmlns:wcm=<span class="hljs-string">&quot;http://schemas.microsoft.com/WMIConfig/2002/State&quot;</span><br>            xmlns:xsi=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>&gt;<br>            &lt;AutoLogon&gt;<br>                &lt;Password&gt;<br>                    &lt;Value&gt;&lt;/Value&gt;<br>                    &lt;PlainText&gt;<span class="hljs-literal">true</span>&lt;/PlainText&gt;<br>                &lt;/Password&gt;<br>                &lt;Enabled&gt;<span class="hljs-literal">true</span>&lt;/Enabled&gt;<br>                &lt;Username&gt;AnJia&lt;/Username&gt;<br>            &lt;/AutoLogon&gt;<br>            &lt;OOBE&gt;<br>                &lt;HideEULAPage&gt;<span class="hljs-literal">true</span>&lt;/HideEULAPage&gt;<br>                &lt;HideOEMRegistrationScreen&gt;<span class="hljs-literal">true</span>&lt;/HideOEMRegistrationScreen&gt;<br>                &lt;HideOnlineAccountScreens&gt;<span class="hljs-literal">true</span>&lt;/HideOnlineAccountScreens&gt;<br>                &lt;HideWirelessSetupInOOBE&gt;<span class="hljs-literal">true</span>&lt;/HideWirelessSetupInOOBE&gt;<br>                &lt;NetworkLocation&gt;Work&lt;/NetworkLocation&gt;<br>                &lt;SkipUserOOBE&gt;<span class="hljs-literal">true</span>&lt;/SkipUserOOBE&gt;<br>                &lt;SkipMachineOOBE&gt;<span class="hljs-literal">true</span>&lt;/SkipMachineOOBE&gt;<br>                &lt;ProtectYourPC&gt;1&lt;/ProtectYourPC&gt;<br>            &lt;/OOBE&gt;<br>            &lt;UserAccounts&gt;<br>                &lt;LocalAccounts&gt;<br>                    &lt;LocalAccount wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                        &lt;Password&gt;<br>                            &lt;Value&gt;&lt;/Value&gt;<br>                            &lt;PlainText&gt;<span class="hljs-literal">true</span>&lt;/PlainText&gt;<br>                        &lt;/Password&gt;<br>                        &lt;Description&gt;AnJia&lt;/Description&gt;<br>                        &lt;DisplayName&gt;AnJia&lt;/DisplayName&gt;<br>                        &lt;Group&gt;Administrators&lt;/Group&gt;<br>                        &lt;Name&gt;AnJia&lt;/Name&gt;<br>                    &lt;/LocalAccount&gt;<br>                &lt;/LocalAccounts&gt;<br>            &lt;/UserAccounts&gt;<br>            &lt;RegisteredOrganization&gt;AnJia&lt;/RegisteredOrganization&gt;<br>            &lt;RegisteredOwner&gt;AnJia&lt;/RegisteredOwner&gt;<br>            &lt;DisableAutoDaylightTimeSet&gt;<span class="hljs-literal">false</span>&lt;/DisableAutoDaylightTimeSet&gt;<br>            &lt;FirstLogonCommands&gt;<br>                &lt;SynchronousCommand wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                    &lt;Description&gt;Control Panel View&lt;/Description&gt;<br>                    &lt;Order&gt;1&lt;/Order&gt;<br>                    &lt;CommandLine&gt;reg add <span class="hljs-string">&quot;HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel&quot;</span> /v StartupPage /t REG_DWORD /d 1 /f&lt;/CommandLine&gt;<br>                    &lt;RequiresUserInput&gt;<span class="hljs-literal">true</span>&lt;/RequiresUserInput&gt;<br>                &lt;/SynchronousCommand&gt;<br>                &lt;SynchronousCommand wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                    &lt;Order&gt;2&lt;/Order&gt;<br>                    &lt;Description&gt;Control Panel Icon Size&lt;/Description&gt;<br>                    &lt;RequiresUserInput&gt;<span class="hljs-literal">false</span>&lt;/RequiresUserInput&gt;<br>                    &lt;CommandLine&gt;reg add <span class="hljs-string">&quot;HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel&quot;</span> /v AllItemsIconView /t REG_DWORD /d 0 /f&lt;/CommandLine&gt;<br>                &lt;/SynchronousCommand&gt;<br>                &lt;SynchronousCommand wcm:action=<span class="hljs-string">&quot;add&quot;</span>&gt;<br>                    &lt;Order&gt;3&lt;/Order&gt;<br>                    &lt;RequiresUserInput&gt;<span class="hljs-literal">false</span>&lt;/RequiresUserInput&gt;<br>                    &lt;CommandLine&gt;cmd /C wmic useraccount <span class="hljs-built_in">where</span> name=<span class="hljs-string">&quot;AnJia&quot;</span> <span class="hljs-built_in">set</span> PasswordExpires=<span class="hljs-literal">false</span>&lt;/CommandLine&gt;<br>                    &lt;Description&gt;Password Never Expires&lt;/Description&gt;<br>                &lt;/SynchronousCommand&gt;<br>            &lt;/FirstLogonCommands&gt;<br>            &lt;TimeZone&gt;China Standard Time&lt;/TimeZone&gt;<br>        &lt;/component&gt;<br>    &lt;/settings&gt;<br>&lt;/unattend&gt;<br></code></pre></td></tr></table></figure>
+
+<h2 id="七、配置-samba"><a href="#七、配置-samba" class="headerlink" title="七、配置 samba"></a>七、配置 samba</h2><h4 id="安装-samba"><a href="#安装-samba" class="headerlink" title="安装 samba"></a>安装 samba</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">yum install samba -y<br></code></pre></td></tr></table></figure>
+
+<h4 id="修改-smb-config"><a href="#修改-smb-config" class="headerlink" title="修改 smb config"></a>修改 smb config</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@localhost ~]# vi /etc/samba/smb.conf<br><br><span class="hljs-comment"># /etc/samba/smb.conf</span><br>[global]<br><span class="hljs-built_in">log</span> file = /var/log/samba/log.%m<br>max <span class="hljs-built_in">log</span> size = 5000<br>security = user<br>guest account = nobody<br>map to guest = Bad User<br>load printers = <span class="hljs-built_in">yes</span><br>cups options = raw<br><br>[share]<br>comment = share directory目录<br>path = /smb/<br>directory mask = 0755<br>create mask = 0755<br>guest ok=<span class="hljs-built_in">yes</span><br>writable=<span class="hljs-built_in">yes</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="启动-smb-服务"><a href="#启动-smb-服务" class="headerlink" title="启动 smb 服务"></a>启动 smb 服务</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@localhost ~]# service smb start<br>[root@localhost ~]# systemctl <span class="hljs-built_in">enable</span> smb<br><br></code></pre></td></tr></table></figure>
+
+<h4 id="挂载-win10-系统"><a href="#挂载-win10-系统" class="headerlink" title="挂载 win10 系统"></a>挂载 win10 系统</h4><p>通过 winscp 等软件将 cn_windows_10_business_edition_version_1809_updated_sept_2018_x64_dvd_84ac403f.iso 上传到 cobbler 服务器上,并将创建的应答文件，上传到 cobbler <code>/smb/win/win10_x64_bios_auto.xml</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@localhost ~]# <span class="hljs-built_in">mkdir</span> -p /smb/win<br>[root@localhost ~]# mount -o loop,ro zh-cn_windows_10_enterprise_ltsc_2021_x64_dvd_033b7312.iso /mnt/<br>[root@localhost ~]# <span class="hljs-built_in">cp</span> -r /mnt/* /smb/win<br>[root@localhost ~]# umount /mnt/<br></code></pre></td></tr></table></figure>
+
+<h2 id="八、装-Windows10"><a href="#八、装-Windows10" class="headerlink" title="八、装 Windows10"></a>八、装 Windows10</h2><p>从 vmware 创建一台内存 4G，cpu2 核，磁盘 60G 的空盘，win10 虚拟机，然后开机。记得选 BIOS，别选 UEFI。<br><img src="https://gitee.com/ljh00928/csdn/raw/master/img/6e56c329fdea4466add490819b39036e.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/3b43708c6eab44819bbcb57010aa3f81.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p><img src="https://gitee.com/ljh00928/csdn/raw/master/img/4516113a6b4347578738dae115e4a254.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Windows/" class="category-chain-item">Windows</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Windows/" class="print-no-link">#Windows</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Cobbler+kickstart实现批量全自动装机</div>
+      <div>http://example.com/2025/04/16/Cobbler-kickstart实现批量全自动装机/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>淡黄的cherry</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月16日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/18/kubeadm-%E9%83%A8%E7%BD%B2k8s/" title="kubeadm 部署k8s">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">kubeadm 部署k8s</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/16/%E5%B0%81%E8%A3%85%E4%B8%80%E4%B8%AA%E4%B8%93%E5%B1%9E%E8%87%AA%E5%B7%B1%E7%9A%84Windows-%E7%B3%BB%E7%BB%9F/" title="封装一个专属自己的Windows 系统">
+                        <span class="hidden-mobile">封装一个专属自己的Windows 系统</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  <div>
+    <span id="timeDate">正在载入天数...</span>
+    <span id="times">载入时分秒...</span>
+    <script>
+    var now = new Date();
+    function createtime(){
+        var grt= new Date("08/17/2020 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24;
+        dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum);
+        hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){
+            hnum = "0" + hnum;
+        }
+        minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes);
+        if(String(mnum).length ==1 ){
+                  mnum = "0" + mnum;
+        }
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds);
+        if(String(snum).length ==1 ){
+                  snum = "0" + snum;
+        }
+        document.getElementById("timeDate").innerHTML = "🚀已持续航行&nbsp"+dnum+"&nbsp天";  
+        document.getElementById("times").innerHTML = hnum + "&nbsp时&nbsp" + mnum + "&nbsp分&nbsp" + snum + "&nbsp秒";
+    }
+    setInterval("createtime()",250);
+    </script>
+  </div>
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom.js"></script>
+<script src="/js/snow.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
